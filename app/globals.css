@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #FDFBF7;
+  --foreground: #1F1A16;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbars with warm golden tone */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF6EE;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E1B85F;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C88A24;
+}
+
+/* =========================================================================
+   UNIVERSAL PRINT STYLESHEET FOR BILLS & INVOICES (SPECIFICATION & COMPLIANCE)
+   Guarantees that when printing / saving as PDF:
+   1. The translucent Indian Rangoli mandala watermark prints in the background.
+   2. The bill content renders in high contrast above the watermark.
+   3. Extraneous UI (sidebar, buttons, backdrop overlay) is removed.
+   ========================================================================= */
+@media print {
+  /* Force exact color reproduction for backgrounds & SVGs across Chrome, Edge, Safari, Firefox */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #1A120E !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* When an invoice modal is open, hide the main app view and print ONLY the invoice sheet */
+  body.has-printable-invoice > *:not(.printable-modal-overlay),
+  body.has-printable-invoice main,
+  body.has-printable-invoice aside,
+  body.has-printable-invoice nav,
+  body.has-printable-invoice header,
+  body.has-printable-invoice footer,
+  body.has-printable-invoice [role="navigation"],
+  .no-print,
+  button {
+    display: none !important;
+  }
+
+  /* Flatten modal overlay into normal print flow */
+  .printable-modal-overlay {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    overflow: visible !important;
+    z-index: 999999 !important;
+  }
+
+  /* The printable invoice sheet */
+  .print-bill-sheet {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 1.5rem !important;
+    border: 2px solid #C88A24 !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Translucent Rangoli Mandala watermark: forced visible in print */
+  .print-rangoli-watermark {
+    display: flex !important;
+    position: absolute !important;
+    inset: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: none !important;
+    opacity: 0.16 !important;
+    visibility: visible !important;
+    z-index: 0 !important;
+  }
+
+  .print-rangoli-watermark svg {
+    color: #C88A24 !important;
+    opacity: 0.18 !important;
+    visibility: visible !important;
+  }
+
+  /* Foreground text and items table layered cleanly on top */
+  .print-foreground-content {
+    position: relative !important;
+    z-index: 10 !important;
+    visibility: visible !important;
+  }
+
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+}
