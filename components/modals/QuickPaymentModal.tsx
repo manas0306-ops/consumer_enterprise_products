@@ -10,7 +10,7 @@ interface QuickPaymentModalProps {
 }
 
 export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }) => {
-  const { customers, recordPayment } = useBusiness();
+  const { customers, recordPayment, t } = useBusiness();
 
   const indebtedCustomers = customers.filter((c) => c.amountPending > 0);
   const [selectedCustomerId, setSelectedCustomerId] = useState(
@@ -47,7 +47,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, on
               <IndianRupee className="w-4 h-4" />
             </div>
             <h3 className="text-base font-bold text-earth-900 font-serif">
-              Collect Udhar / Settle Payment
+              {t('receivables', 'collectTitle', 'Collect Udhar / Settle Payment')}
             </h3>
           </div>
           <button onClick={onClose} className="text-earth-400 hover:text-earth-700 font-bold">
@@ -57,7 +57,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, on
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
-            <label className="block text-earth-700 font-semibold mb-1">Select Customer *</label>
+            <label className="block text-earth-700 font-semibold mb-1">{t('customers', 'customerName', 'Select Customer *')}</label>
             <select
               value={selectedCustomerId}
               onChange={(e) => {
@@ -69,7 +69,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, on
             >
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} {c.amountPending > 0 ? `(Owes ₹${c.amountPending.toLocaleString('en-IN')})` : '(No Udhar)'}
+                  {c.name} {c.amountPending > 0 ? `(₹${c.amountPending.toLocaleString('en-IN')})` : ''}
                 </option>
               ))}
             </select>
@@ -77,7 +77,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, on
 
           {currentCustomer && (
             <div className="bg-ivory-50 p-3 rounded-xl border border-rangoli-200 flex justify-between items-center">
-              <span className="text-earth-600">Total Udhar Pending:</span>
+              <span className="text-earth-600">{t('receivables', 'amount', 'Total Udhar Pending:')}:</span>
               <span className="text-base font-bold text-danger font-serif">
                 ₹{currentCustomer.amountPending.toLocaleString('en-IN')}
               </span>
@@ -85,7 +85,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, on
           )}
 
           <div>
-            <label className="block text-earth-700 font-semibold mb-1">Amount Received (₹) *</label>
+            <label className="block text-earth-700 font-semibold mb-1">{t('receivables', 'amountReceived', 'Amount Received (₹) *')}</label>
             <input
               type="number"
               required
@@ -98,26 +98,26 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, on
           </div>
 
           <div>
-            <label className="block text-earth-700 font-semibold mb-1">Payment Mode</label>
+            <label className="block text-earth-700 font-semibold mb-1">{t('purchases', 'paymentMode', 'Payment Mode')}</label>
             <select
               value={paymentMode}
               onChange={(e) => setPaymentMode(e.target.value as any)}
               className="w-full px-3 py-2 rounded-lg border border-rangoli-300"
             >
-              <option value="cash">Cash / Rokad</option>
-              <option value="upi">UPI / GPay / PhonePe</option>
-              <option value="bank_transfer">Bank Transfer / IMPS</option>
+              <option value="cash">{t('sales', 'cash', 'Cash / Rokad')}</option>
+              <option value="upi">{t('sales', 'upi', 'UPI / GPay / PhonePe')}</option>
+              <option value="bank_transfer">{t('common', 'bank', 'Bank Transfer / IMPS')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-earth-700 font-semibold mb-1">Notes / Reference</label>
+            <label className="block text-earth-700 font-semibold mb-1">{t('common', 'notes', 'Notes / Reference')}</label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-rangoli-300"
-              placeholder="e.g. Settle part payment for last week"
+              placeholder={t('common', 'notesPlaceholder', 'e.g. Settle part payment for last week')}
             />
           </div>
 
@@ -127,13 +127,13 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, on
               onClick={onClose}
               className="px-4 py-2 rounded-xl border border-earth-300 text-earth-700 font-semibold"
             >
-              Cancel
+              {t('common', 'cancel', 'Cancel')}
             </button>
             <button
               type="submit"
               className="px-5 py-2 rounded-xl bg-success hover:bg-emerald-700 text-white font-bold shadow-sm"
             >
-              Confirm Settlement
+              {t('customers', 'recordPayment', 'Confirm Settlement')}
             </button>
           </div>
         </form>

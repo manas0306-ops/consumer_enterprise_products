@@ -31,6 +31,7 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
     overdueReceivablesTotal,
     sales,
     business,
+    t,
   } = useBusiness();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -85,27 +86,27 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs uppercase font-bold tracking-widest text-rangoli-700 bg-rangoli-100 px-2 py-0.5 rounded-full border border-rangoli-300">
-                Bahi-Khata Ledger
+                {t('receivables', 'ledgerBadge', 'Bahi-Khata Ledger')}
               </span>
             </div>
             <h2 className="text-xl font-bold text-earth-900 font-serif mt-1">
-              Udhar & Receivables Engine
+              {t('receivables', 'title', 'Udhar & Receivables Engine')}
             </h2>
             <p className="text-xs text-earth-600 mt-0.5">
-              Tracks customer credit balances, due dates, aging, and automated WhatsApp reminder triggers
+              {t('receivables', 'subtitle', 'Tracks customer credit balances, due dates, aging, and automated WhatsApp reminder triggers')}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 mt-4 pt-4 border-t border-rangoli-100">
             <div>
-              <span className="text-[11px] text-earth-500 uppercase tracking-wider block">Total Outstanding Udhar</span>
+              <span className="text-[11px] text-earth-500 uppercase tracking-wider block">{t('receivables', 'totalOutstanding', 'Total Outstanding Udhar')}</span>
               <span className="text-xl font-bold text-earth-900 font-serif">
                 ₹{totalReceivables.toLocaleString('en-IN')}
               </span>
             </div>
             <div className="h-8 w-[1px] bg-rangoli-200" />
             <div>
-              <span className="text-[11px] text-danger uppercase tracking-wider block">Critically Overdue</span>
+              <span className="text-[11px] text-danger uppercase tracking-wider block">{t('receivables', 'overdueAmount', 'Critically Overdue')}</span>
               <span className="text-xl font-bold text-danger font-serif">
                 ₹{overdueReceivablesTotal.toLocaleString('en-IN')}
               </span>
@@ -120,10 +121,10 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
               <IndianRupee className="w-5 h-5" />
             </div>
             <h3 className="text-sm font-bold text-earth-900 font-serif">
-              Record Customer Payment
+              {t('receivables', 'settlePayment', 'Record Customer Payment')}
             </h3>
             <p className="text-xs text-earth-600 mt-1">
-              Customer returned udhar? Enter amount to instantly reduce ledger balance.
+              {t('receivables', 'settleSub', 'Customer returned udhar? Enter amount to instantly reduce ledger balance.')}
             </p>
           </div>
 
@@ -131,7 +132,7 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
             onClick={onOpenQuickPayment}
             className="w-full mt-4 py-2 px-3 rounded-xl bg-earth-900 hover:bg-earth-800 text-white text-xs font-bold shadow-sm transition-all"
           >
-            + Settle Udhar Now
+            {t('receivables', 'settlePayment', '+ Settle Udhar Now')}
           </button>
         </div>
       </div>
@@ -144,23 +145,28 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search customer, invoice, phone..."
+            placeholder={t('receivables', 'searchPlaceholder', 'Search customer, invoice, phone...')}
             className="w-full pl-9 pr-3 py-2 rounded-xl border border-rangoli-200 bg-white text-xs text-earth-900 placeholder:text-earth-400 focus:outline-none focus:ring-1 focus:ring-rangoli-500"
           />
         </div>
 
         <div className="flex gap-2 w-full sm:w-auto">
-          {(['ALL', 'PENDING', 'OVERDUE', 'PAID'] as const).map((st) => (
+          {([
+            { id: 'ALL', label: t('receivables', 'all', 'All') },
+            { id: 'PENDING', label: t('receivables', 'pending', 'Pending') },
+            { id: 'OVERDUE', label: t('receivables', 'overdue', 'Overdue') },
+            { id: 'PAID', label: t('receivables', 'settled', 'Paid') },
+          ] as const).map((tab) => (
             <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id as any)}
               className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-                statusFilter === st
+                statusFilter === tab.id
                   ? 'bg-rangoli-500 text-white border-rangoli-500 shadow-xs'
                   : 'bg-white text-earth-700 border-rangoli-200 hover:bg-rangoli-50'
               }`}
             >
-              {st}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -172,14 +178,14 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
           <table className="w-full text-left text-xs text-earth-800">
             <thead className="bg-ivory-100/80 border-b border-rangoli-200 text-earth-600 font-semibold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-4">Customer & Contact</th>
-                <th className="py-3 px-4">Invoice #</th>
-                <th className="py-3 px-4 text-right">Total Sale</th>
-                <th className="py-3 px-4 text-right">Paid</th>
-                <th className="py-3 px-4 text-right">Pending Udhar</th>
-                <th className="py-3 px-4">Due Date</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">{t('receivables', 'customer', 'Customer & Contact')}</th>
+                <th className="py-3 px-4">{t('sales', 'invoiceNo', 'Invoice #')}</th>
+                <th className="py-3 px-4 text-right">{t('sales', 'amount', 'Total Sale')}</th>
+                <th className="py-3 px-4 text-right">{t('customers', 'amountPaid', 'Paid')}</th>
+                <th className="py-3 px-4 text-right">{t('receivables', 'amount', 'Pending Udhar')}</th>
+                <th className="py-3 px-4">{t('receivables', 'dueDate', 'Due Date')}</th>
+                <th className="py-3 px-4 text-center">{t('sales', 'mode', 'Status')}</th>
+                <th className="py-3 px-4 text-right">{t('sales', 'actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-rangoli-100 font-medium">
@@ -191,7 +197,7 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
                   <tr key={r.id} className="hover:bg-rangoli-50/40 transition-colors">
                     <td className="py-3 px-4">
                       <div className="font-bold text-sm text-earth-900">{r.customerName}</div>
-                      <div className="text-[11px] text-earth-500">{r.customerPhone || 'No phone'}</div>
+                      <div className="text-[11px] text-earth-500">{r.customerPhone || t('common', 'none', 'No phone')}</div>
                     </td>
 
                     <td className="py-3 px-4 font-mono text-[11px] text-earth-600">
@@ -220,15 +226,15 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
                     <td className="py-3 px-4 text-center">
                       {isPaid ? (
                         <span className="px-2.5 py-0.5 rounded-full bg-success/10 text-success border border-success/30 text-[10px] font-bold">
-                          Paid
+                          {t('receivables', 'settled', 'Paid')}
                         </span>
                       ) : isOverdue ? (
                         <span className="px-2.5 py-0.5 rounded-full bg-danger/10 text-danger border border-danger/30 text-[10px] font-bold animate-pulse">
-                          Overdue ({r.daysOverdue}d)
+                          {t('receivables', 'overdue', 'Overdue')} ({r.daysOverdue}d)
                         </span>
                       ) : (
                         <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold">
-                          Pending
+                          {t('receivables', 'pending', 'Pending')}
                         </span>
                       )}
                     </td>
@@ -265,10 +271,10 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
                           }
                         }}
                         className="p-1 rounded-lg border border-rangoli-200 bg-white hover:bg-rangoli-100 text-rangoli-700 text-xs font-semibold inline-flex items-center gap-1 shadow-2xs transition-colors align-middle"
-                        title="View & Print Bill / Invoice"
+                        title={t('invoices', 'printInvoice', 'View & Print Bill / Invoice')}
                       >
                         <FileText className="w-3.5 h-3.5" />
-                        <span>Bill</span>
+                        <span>{t('sales', 'print', 'Bill')}</span>
                       </button>
 
                       {!isPaid && (
@@ -280,12 +286,12 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
                             }}
                             className="px-2.5 py-1 rounded-lg bg-rangoli-100 hover:bg-rangoli-200 text-rangoli-800 text-[11px] font-bold transition-colors inline-block align-middle"
                           >
-                            Collect
+                            {t('receivables', 'collect', 'Collect')}
                           </button>
                           <button
                             onClick={() => generateWhatsAppReminder(r)}
                             className="p-1 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors inline-block align-middle"
-                            title="Send WhatsApp payment reminder"
+                            title={t('customers', 'sendReminder', 'Send WhatsApp payment reminder')}
                           >
                             <MessageCircle className="w-4 h-4" />
                           </button>
@@ -305,7 +311,7 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
         <div className="fixed inset-0 z-50 bg-earth-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-rangoli-300 shadow-rangoli-lg max-w-sm w-full p-6 animate-in fade-in zoom-in-95">
             <h3 className="text-base font-bold text-earth-900 font-serif mb-1">
-              Collect Udhar Payment
+              {t('receivables', 'collectTitle', 'Collect Udhar Payment')}
             </h3>
             <p className="text-xs text-earth-500 mb-4">
               {selectedReceivable.customerName} • Invoice #{selectedReceivable.invoiceNo}
@@ -314,7 +320,7 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
             <form onSubmit={handleSettleSubmit} className="space-y-4 text-xs">
               <div>
                 <label className="block text-earth-600 font-semibold mb-1">
-                  Remaining Udhar Balance
+                  {t('receivables', 'remainingBalance', 'Remaining Udhar Balance')}
                 </label>
                 <div className="text-xl font-bold text-earth-900 font-serif mb-3">
                   ₹{selectedReceivable.remainingAmount.toLocaleString('en-IN')}
@@ -323,7 +329,7 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
 
               <div>
                 <label className="block text-earth-600 font-semibold mb-1">
-                  Amount Received Now (₹) *
+                  {t('receivables', 'amountReceived', 'Amount Received Now (₹) *')}
                 </label>
                 <input
                   type="number"
@@ -342,13 +348,13 @@ export const ReceivablesManager: React.FC<{ onOpenQuickPayment: () => void }> = 
                   onClick={() => setSelectedReceivable(null)}
                   className="px-4 py-2 rounded-xl border border-earth-300 text-earth-700 font-semibold hover:bg-earth-50"
                 >
-                  Cancel
+                  {t('common', 'cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-success hover:bg-emerald-700 text-white font-bold shadow-sm"
                 >
-                  Record Payment
+                  {t('customers', 'recordPayment', 'Record Payment')}
                 </button>
               </div>
             </form>

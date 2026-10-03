@@ -18,7 +18,7 @@ import { RangoliCorner } from '@/components/rangoli/RangoliMotif';
 import { PrintableInvoiceModal } from '@/components/invoices/PrintableInvoiceModal';
 
 export const SalesManager: React.FC<{ onOpenQuickSale: () => void }> = ({ onOpenQuickSale }) => {
-  const { sales, business } = useBusiness();
+  const { sales, business, uiLanguage, t } = useBusiness();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<'ALL' | 'CREDIT' | 'CASH' | 'UPI'>('ALL');
@@ -45,10 +45,10 @@ export const SalesManager: React.FC<{ onOpenQuickSale: () => void }> = ({ onOpen
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
         <div>
           <h2 className="text-xl font-bold text-earth-900 font-serif">
-            Sales Register & Invoices
+            {t('sales', 'title', 'Sales Register & Invoices')}
           </h2>
           <p className="text-xs text-earth-600">
-            Real-time audit trail of customer sales, GST billing, items dispatched, and payment states
+            {t('sales', 'subtitle', 'Real-time audit trail of customer sales, GST billing, items dispatched, and payment states')}
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export const SalesManager: React.FC<{ onOpenQuickSale: () => void }> = ({ onOpen
           className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-rangoli-500 hover:bg-rangoli-600 text-white text-xs font-bold shadow-md hover:shadow-rangoli transition-all"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>Record New Sale</span>
+          <span>{t('sales', 'recordNewSale', 'Record New Sale')}</span>
         </button>
       </div>
 
@@ -69,25 +69,36 @@ export const SalesManager: React.FC<{ onOpenQuickSale: () => void }> = ({ onOpen
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search invoice # or customer..."
+            placeholder={t('sales', 'searchPlaceholder', 'Search invoice # or customer...')}
             className="w-full pl-9 pr-3 py-2 rounded-xl border border-rangoli-200 bg-white text-xs text-earth-900 placeholder:text-earth-400 focus:outline-none focus:ring-1 focus:ring-rangoli-500"
           />
         </div>
 
         <div className="flex gap-2 w-full sm:w-auto">
-          {(['ALL', 'CREDIT', 'CASH', 'UPI'] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setFilterMode(m)}
-              className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-                filterMode === m
-                  ? 'bg-rangoli-500 text-white border-rangoli-500 shadow-xs'
-                  : 'bg-white text-earth-700 border-rangoli-200 hover:bg-rangoli-50'
-              }`}
-            >
-              {m === 'CREDIT' ? 'Udhar / Credit' : m}
-            </button>
-          ))}
+          {(['ALL', 'CREDIT', 'CASH', 'UPI'] as const).map((m) => {
+            const label =
+              m === 'ALL'
+                ? t('sales', 'all', 'All Sales')
+                : m === 'CREDIT'
+                ? t('sales', 'credit', 'Credit (Udhar)')
+                : m === 'CASH'
+                ? t('sales', 'cash', 'Cash')
+                : t('sales', 'upi', 'UPI');
+
+            return (
+              <button
+                key={m}
+                onClick={() => setFilterMode(m)}
+                className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                  filterMode === m
+                    ? 'bg-rangoli-500 text-white border-rangoli-500 shadow-xs'
+                    : 'bg-white text-earth-700 border-rangoli-200 hover:bg-rangoli-50'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -97,12 +108,12 @@ export const SalesManager: React.FC<{ onOpenQuickSale: () => void }> = ({ onOpen
           <table className="w-full text-left text-xs text-earth-800">
             <thead className="bg-ivory-100/80 border-b border-rangoli-200 text-earth-600 font-semibold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-4">Invoice # & Date</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Products / Items</th>
-                <th className="py-3 px-4 text-right">Total Amount</th>
-                <th className="py-3 px-4 text-center">Payment Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">{t('sales', 'invoiceNo', 'Invoice # & Date')}</th>
+                <th className="py-3 px-4">{t('sales', 'customer', 'Customer')}</th>
+                <th className="py-3 px-4">{t('sales', 'items', 'Products / Items')}</th>
+                <th className="py-3 px-4 text-right">{t('sales', 'amount', 'Total Amount')}</th>
+                <th className="py-3 px-4 text-center">{t('sales', 'mode', 'Payment Status')}</th>
+                <th className="py-3 px-4 text-right">{t('sales', 'actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-rangoli-100 font-medium">
@@ -111,7 +122,7 @@ export const SalesManager: React.FC<{ onOpenQuickSale: () => void }> = ({ onOpen
                   <td className="py-3 px-4">
                     <div className="font-mono font-bold text-sm text-earth-900">{s.invoiceNo}</div>
                     <div className="text-[10px] text-earth-400 mt-0.5">
-                      {new Date(s.createdAt).toLocaleString('en-IN', {
+                      {new Date(s.createdAt).toLocaleString(uiLanguage || 'en-IN', {
                         dateStyle: 'medium',
                         timeStyle: 'short',
                       })}
@@ -140,7 +151,13 @@ export const SalesManager: React.FC<{ onOpenQuickSale: () => void }> = ({ onOpen
                           : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                       }`}
                     >
-                      {s.paymentStatus === 'credit' ? 'Udhar' : s.paymentStatus}
+                      {s.paymentStatus === 'credit'
+                        ? t('common', 'credit', 'Udhar')
+                        : s.paymentStatus === 'cash'
+                        ? t('common', 'cash', 'Cash')
+                        : s.paymentStatus === 'upi'
+                        ? t('common', 'upi', 'UPI')
+                        : t('common', 'paid', 'Paid')}
                     </span>
                   </td>
 
@@ -150,7 +167,7 @@ export const SalesManager: React.FC<{ onOpenQuickSale: () => void }> = ({ onOpen
                       className="px-2.5 py-1 rounded-lg border border-rangoli-200 hover:bg-rangoli-100 text-rangoli-800 text-[11px] font-semibold transition-colors flex items-center gap-1 ml-auto"
                     >
                       <FileText className="w-3.5 h-3.5" />
-                      <span>View Bill</span>
+                      <span>{t('sales', 'print', 'View Bill')}</span>
                     </button>
                   </td>
                 </tr>

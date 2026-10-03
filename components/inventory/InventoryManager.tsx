@@ -19,7 +19,7 @@ import { Product } from '@/types';
 import { RangoliCorner } from '@/components/rangoli/RangoliMotif';
 
 export const InventoryManager: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct, suppliers } = useBusiness();
+  const { products, addProduct, updateProduct, deleteProduct, suppliers, t } = useBusiness();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
@@ -119,10 +119,10 @@ export const InventoryManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
         <div>
           <h2 className="text-xl font-bold text-earth-900 font-serif">
-            Inventory & Stock Engine
+            {t('inventory', 'title', 'Inventory & Stock Engine')}
           </h2>
           <p className="text-xs text-earth-600">
-            Real-time stock decrement on sales, automatic low-stock alerts, and restocking tracking
+            {t('inventory', 'subtitle', 'Deterministic stock quantities and reorder thresholds')}
           </p>
         </div>
 
@@ -146,7 +146,7 @@ export const InventoryManager: React.FC = () => {
           className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-rangoli-500 hover:bg-rangoli-600 text-white text-xs font-bold shadow-md hover:shadow-rangoli transition-all"
         >
           <Plus className="w-4 h-4" />
-          <span>Add New Product</span>
+          <span>{t('inventory', 'addProduct', 'Add New Product')}</span>
         </button>
       </div>
 
@@ -159,7 +159,7 @@ export const InventoryManager: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search product name, Hindi name, or SKU..."
+            placeholder={t('inventory', 'searchPlaceholder', 'Search product name, Hindi name, or SKU...')}
             className="w-full pl-9 pr-3 py-2 rounded-xl border border-rangoli-200 bg-white text-xs text-earth-900 placeholder:text-earth-400 focus:outline-none focus:ring-1 focus:ring-rangoli-500"
           />
         </div>
@@ -171,7 +171,7 @@ export const InventoryManager: React.FC = () => {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="w-full px-3 py-2 rounded-xl border border-rangoli-200 bg-white text-xs text-earth-900 focus:outline-none focus:ring-1 focus:ring-rangoli-500"
           >
-            <option value="ALL">All Categories ({categories.length})</option>
+            <option value="ALL">{t('inventory', 'all', 'All Categories')} ({categories.length})</option>
             {categories.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -190,7 +190,7 @@ export const InventoryManager: React.FC = () => {
                 : 'bg-white text-earth-700 border-rangoli-200 hover:bg-rangoli-50'
             }`}
           >
-            All Stock
+            {t('inventory', 'all', 'All Stock')}
           </button>
           <button
             onClick={() => setStockFilter('LOW')}
@@ -200,7 +200,7 @@ export const InventoryManager: React.FC = () => {
                 : 'bg-white text-earth-700 border-rangoli-200 hover:bg-rangoli-50'
             }`}
           >
-            Low Stock
+            {t('inventory', 'lowStock', 'Low Stock')}
           </button>
           <button
             onClick={() => setStockFilter('OOS')}
@@ -210,7 +210,7 @@ export const InventoryManager: React.FC = () => {
                 : 'bg-white text-earth-700 border-rangoli-200 hover:bg-rangoli-50'
             }`}
           >
-            Out of Stock
+            {t('inventory', 'outOfStock', 'Out of Stock')}
           </button>
         </div>
       </div>
@@ -221,13 +221,13 @@ export const InventoryManager: React.FC = () => {
           <table className="w-full text-left text-xs text-earth-800">
             <thead className="bg-ivory-100/80 border-b border-rangoli-200 text-earth-600 font-semibold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-4">Product & Category</th>
+                <th className="py-3 px-4">{t('inventory', 'productName', 'Product & Category')}</th>
                 <th className="py-3 px-4">SKU</th>
-                <th className="py-3 px-4 text-right">Available Quantity</th>
-                <th className="py-3 px-4 text-right">Buy Price</th>
-                <th className="py-3 px-4 text-right">Sell Price</th>
-                <th className="py-3 px-4 text-center">Stock Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4 text-right">{t('inventory', 'stock', 'Available Quantity')}</th>
+                <th className="py-3 px-4 text-right">{t('inventory', 'costPrice', 'Buy Price')}</th>
+                <th className="py-3 px-4 text-right">{t('inventory', 'sellingPrice', 'Sell Price')}</th>
+                <th className="py-3 px-4 text-center">{t('common', 'status', 'Stock Status')}</th>
+                <th className="py-3 px-4 text-right">{t('common', 'actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-rangoli-100 font-medium">
@@ -254,7 +254,7 @@ export const InventoryManager: React.FC = () => {
                         {p.quantity} {p.unit}
                       </span>
                       <span className="block text-[10px] text-earth-400">
-                        Min threshold: {p.reorderLevel} {p.unit}
+                        {t('inventory', 'reorderLevel', 'Min threshold')}: {p.reorderLevel} {p.unit}
                       </span>
                     </td>
 
@@ -269,15 +269,15 @@ export const InventoryManager: React.FC = () => {
                     <td className="py-3 px-4 text-center">
                       {isOOS ? (
                         <span className="px-2.5 py-0.5 rounded-full bg-danger/10 text-danger border border-danger/30 text-[10px] font-bold inline-block">
-                          Out of Stock
+                          {t('common', 'outOfStock', 'Out of Stock')}
                         </span>
                       ) : isLow ? (
                         <span className="px-2.5 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/30 text-[10px] font-bold inline-block">
-                          Low Stock
+                          {t('common', 'lowStock', 'Low Stock')}
                         </span>
                       ) : (
                         <span className="px-2.5 py-0.5 rounded-full bg-success/10 text-success border border-success/30 text-[10px] font-bold inline-block">
-                          Healthy
+                          {t('common', 'healthy', 'Healthy')}
                         </span>
                       )}
                     </td>
@@ -311,13 +311,13 @@ export const InventoryManager: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-earth-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-rangoli-300 shadow-rangoli-lg max-w-lg w-full p-6 relative animate-in fade-in zoom-in-95">
             <h3 className="text-base font-bold text-earth-900 font-serif mb-4">
-              {editingProduct ? 'Edit Product Details' : 'Add New Product to Inventory'}
+              {editingProduct ? t('common', 'edit', 'Edit Product Details') : t('inventory', 'addProduct', 'Add New Product to Inventory')}
             </h3>
 
             <form onSubmit={handleSaveProduct} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="block font-semibold text-earth-700 mb-1">Product Name *</label>
+                  <label className="block font-semibold text-earth-700 mb-1">{t('inventory', 'productName', 'Product Name')} *</label>
                   <input
                     type="text"
                     required
@@ -341,7 +341,7 @@ export const InventoryManager: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-earth-700 mb-1">Category</label>
+                  <label className="block font-semibold text-earth-700 mb-1">{t('inventory', 'category', 'Category')}</label>
                   <select
                     value={formState.category}
                     onChange={(e) => setFormState({ ...formState, category: e.target.value })}
@@ -371,7 +371,7 @@ export const InventoryManager: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-semibold text-earth-700 mb-1">Initial Stock</label>
+                  <label className="block font-semibold text-earth-700 mb-1">{t('inventory', 'stock', 'Initial Stock')}</label>
                   <input
                     type="number"
                     value={formState.quantity}
@@ -395,7 +395,7 @@ export const InventoryManager: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-earth-700 mb-1">Reorder Level</label>
+                  <label className="block font-semibold text-earth-700 mb-1">{t('inventory', 'reorderLevel', 'Reorder Level')}</label>
                   <input
                     type="number"
                     value={formState.reorderLevel}
@@ -407,7 +407,7 @@ export const InventoryManager: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-earth-700 mb-1">Purchase Price (₹)</label>
+                  <label className="block font-semibold text-earth-700 mb-1">{t('inventory', 'costPrice', 'Purchase Price (₹)')}</label>
                   <input
                     type="number"
                     value={formState.purchasePrice}
@@ -416,7 +416,7 @@ export const InventoryManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-earth-700 mb-1">Selling Price (₹)</label>
+                  <label className="block font-semibold text-earth-700 mb-1">{t('inventory', 'sellingPrice', 'Selling Price (₹)')}</label>
                   <input
                     type="number"
                     value={formState.sellingPrice}
@@ -432,13 +432,13 @@ export const InventoryManager: React.FC = () => {
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 rounded-xl border border-earth-300 text-earth-700 font-semibold hover:bg-earth-50"
                 >
-                  Cancel
+                  {t('common', 'cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-rangoli-500 hover:bg-rangoli-600 text-white font-bold shadow-sm"
                 >
-                  {editingProduct ? 'Save Changes' : 'Create Product'}
+                  {editingProduct ? t('common', 'save', 'Save Changes') : t('inventory', 'saveProduct', 'Create Product')}
                 </button>
               </div>
             </form>

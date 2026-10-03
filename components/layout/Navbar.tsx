@@ -50,19 +50,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const getPageTitle = (tab: ActiveTab) => {
     switch (tab) {
-      case 'dashboard': return t('dashboard', 'title') || 'Business Command Dashboard';
-      case 'assistant': return t('assistant', 'title') || 'KINETIC Conversational AI';
-      case 'sales': return 'Sales Register & Invoices';
-      case 'purchases': return 'Stock Procurement & Purchases';
-      case 'inventory': return t('inventory', 'title') || 'Inventory & Stock Engine';
-      case 'customers': return t('customers', 'title') || 'Customer Directory & Khata';
-      case 'receivables': return t('receivables', 'title') || 'Udhar / Receivables Ledger';
-      case 'analytics': return 'Financial Analytics & Trends';
-      case 'insights': return 'AI Business Insights';
-      case 'alerts': return t('alerts', 'title') || 'Live System Alerts';
-      case 'documents': return t('documents', 'title') || 'Bill & Informal Note Scanner';
-      case 'settings': return t('settings', 'title') || 'Settings & Language';
-      default: return 'KINETIC MSME OS';
+      case 'dashboard': return t('dashboard', 'title', 'Business Command Dashboard');
+      case 'assistant': return t('assistant', 'title', 'KINETIC Conversational AI');
+      case 'sales': return t('sales', 'title', 'Sales Register & Invoices');
+      case 'purchases': return t('purchases', 'title', 'Stock Procurement & Purchases');
+      case 'inventory': return t('inventory', 'title', 'Inventory & Stock Engine');
+      case 'customers': return t('customers', 'title', 'Customer Directory & Khata');
+      case 'receivables': return t('receivables', 'title', 'Udhar / Receivables Ledger');
+      case 'analytics': return t('analytics', 'title', 'Financial Analytics & Trends');
+      case 'insights': return t('insights', 'title', 'AI Business Insights');
+      case 'alerts': return t('alerts', 'title', 'Live System Alerts');
+      case 'documents': return t('documents', 'title', 'Bill & Informal Note Scanner');
+      case 'settings': return t('settings', 'title', 'Settings & Language');
+      default: return t('nav', 'title', 'KINETIC MSME OS');
     }
   };
 
@@ -100,13 +100,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           {canUndo && (
             <div className="animate-fade-in flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/15 border border-success/30 text-success text-xs font-semibold shadow-sm">
               <span className="w-2 h-2 rounded-full bg-success animate-ping" />
-              <span className="hidden sm:inline">Recorded</span>
+              <span className="hidden sm:inline">{t('nav', 'recorded', 'Recorded')}</span>
               <button
                 onClick={undoLastTransaction}
                 className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-success text-white hover:bg-success/90 transition-all font-bold text-[11px]"
               >
                 <RotateCcw className="w-3 h-3" />
-                Undo (8s)
+                {t('nav', 'undo', 'Undo (8s)')}
               </button>
             </div>
           )}
@@ -119,12 +119,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
             <Cpu className="w-3.5 h-3.5 text-rangoli-600" />
-            <span className="font-medium">Hybrid AI:</span>
+            <span className="font-medium">{t('nav', 'hybridAI', 'Hybrid AI')}:</span>
             <span className="font-bold text-earth-800">
               {Math.round(
                 (telemetry.localLightweightRequests / (telemetry.totalRequests || 1)) * 100
               )}
-              % Local
+              % {t('nav', 'local', 'Local')}
             </span>
             <span className="text-earth-500">({telemetry.avgLatencyMs}ms)</span>
           </div>
@@ -135,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rangoli-500 hover:bg-rangoli-600 text-white text-xs font-semibold shadow-sm transition-all active:scale-95"
           >
             <PlusCircle className="w-3.5 h-3.5" />
-            <span>+ Sale</span>
+            <span>{t('nav', 'quickSale', '+ Sale')}</span>
           </button>
 
           {/* Quick Action: Settle Payment */}
@@ -144,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ivory-100 hover:bg-ivory-200 border border-rangoli-300 text-earth-800 text-xs font-semibold shadow-sm transition-all active:scale-95"
           >
             <IndianRupee className="w-3.5 h-3.5 text-success" />
-            <span>Settle Udhar</span>
+            <span>{t('nav', 'settleUdhar', 'Settle Udhar')}</span>
           </button>
 
           {/* Persistent "Ask KINETIC" Mic Button (PRD §6.2, Design System §12 & §15) */}
@@ -154,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Ask KINETIC Voice Assistant"
           >
             <Mic className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">Ask KINETIC</span>
+            <span className="hidden xs:inline">{t('nav', 'askKinetic', 'Ask KINETIC')}</span>
           </button>
 
           {/* Language Selector Chip showing Native Script (PRD §6.1, Design System §17) */}

@@ -19,7 +19,7 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
-  const { business, updateBusiness, resetToDemo } = useBusiness();
+  const { business, updateBusiness, resetToDemo, t } = useBusiness();
   const [storeName, setStoreName] = useState(business.name);
   const [ownerName, setOwnerName] = useState(business.ownerName);
   const [isCustomizing, setIsCustomizing] = useState(false);
@@ -63,7 +63,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             }}
             className="px-3.5 py-1.5 rounded-full bg-rangoli-500 hover:bg-rangoli-600 text-white font-bold transition-all shadow-sm active:scale-95"
           >
-            Launch Demo
+            {t('landing', 'launchDemo', 'Launch Demo')}
           </button>
         </div>
       </header>
@@ -84,10 +84,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             KINETIC
           </h1>
           <p className="text-lg sm:text-xl font-medium text-rangoli-700 max-w-2xl mx-auto font-serif">
-            AI-powered business intelligence for the businesses that keep India moving.
+            {t('landing', 'heroSubtitle', 'AI-powered business intelligence for the businesses that keep India moving.')}
           </p>
           <div className="text-sm sm:text-base font-semibold uppercase tracking-widest text-earth-600 font-serif">
-            Speak • Record • Understand • Act
+            {t('landing', 'heroTagline', 'Speak • Record • Understand • Act')}
           </div>
         </div>
 
@@ -99,30 +99,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           <div className="bg-white/80 backdrop-blur-xs p-3.5 rounded-xl border border-rangoli-200 shadow-xs space-y-1">
             <div className="font-bold text-earth-900 flex items-center gap-1.5">
               <Mic className="w-3.5 h-3.5 text-rangoli-500" />
-              <span>Multilingual Voice First</span>
+              <span>{t('landing', 'kiranaVoiceFirst', 'Multilingual Voice First')}</span>
             </div>
             <p className="text-earth-600 leading-snug">
-              Speak in Hindi, Hinglish, or English. Records sales, inventory, and bahi-khata udhar instantly.
+              {t('landing', 'kiranaVoiceFirstDesc', 'Speak in Hindi, Punjabi, or English to record khata & sales instantly.')}
             </p>
           </div>
 
           <div className="bg-white/80 backdrop-blur-xs p-3.5 rounded-xl border border-rangoli-200 shadow-xs space-y-1">
             <div className="font-bold text-earth-900 flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-rangoli-500" />
-              <span>Real Relational Data</span>
+              <span>{t('dashboard', 'liveData', 'Real Relational Data')}</span>
             </div>
             <p className="text-earth-600 leading-snug">
-              Actual database synchronization: sales decrement stock, credit tracks receivables, and alerts trigger automatically.
+              {t('landing', 'realDataSync', 'Actual database synchronization: sales decrement stock, credit tracks receivables, and alerts trigger automatically.')}
             </p>
           </div>
 
           <div className="bg-white/80 backdrop-blur-xs p-3.5 rounded-xl border border-rangoli-200 shadow-xs space-y-1">
             <div className="font-bold text-earth-900 flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-rangoli-500" />
-              <span>Hybrid-Ready Efficiency</span>
+              <span>{t('landing', 'offlineHybrid', 'Hybrid Architecture')}</span>
             </div>
             <p className="text-earth-600 leading-snug">
-              Zero cloud cost for daily ledger tasks with local lightweight NLP model routing for spotty 2G/mobile connectivity.
+              {t('landing', 'offlineHybridDesc', 'Fast on-device deterministic processing for privacy and zero cloud cost.')}
             </p>
           </div>
         </div>
@@ -138,7 +138,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-rangoli-500 to-rangoli-600 hover:from-rangoli-600 hover:to-rangoli-700 text-white font-bold text-sm shadow-rangoli hover:shadow-rangoli-lg transition-all active:scale-95 flex items-center justify-center gap-2"
             >
               <Store className="w-4 h-4" />
-              <span>Enter Operating System (Live Demo)</span>
+              <span>{t('landing', 'enterPlatform', 'Enter Operating System (Live Demo)')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
@@ -146,7 +146,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               onClick={() => setIsCustomizing(true)}
               className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white hover:bg-ivory-100 border border-rangoli-300 text-earth-800 font-semibold text-sm transition-all"
             >
-              Setup Custom Store
+              {t('landing', 'customizeStore', 'Setup Custom Store')}
             </button>
           </div>
         ) : (
@@ -155,12 +155,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             className="bg-white/95 p-5 rounded-2xl border border-rangoli-300 shadow-rangoli max-w-md mx-auto text-left space-y-3 animate-in fade-in"
           >
             <h3 className="font-bold text-sm font-serif text-earth-900">
-              Setup Your Kirana / MSME Store
+              {t('landing', 'customizeStore', 'Setup Your Kirana / MSME Store')}
             </h3>
 
             <div>
               <label className="block text-[11px] font-semibold text-earth-600 mb-1">
-                Store Name
+                {t('settings', 'storeName', 'Store Name')}
               </label>
               <input
                 type="text"
@@ -173,7 +173,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
             <div>
               <label className="block text-[11px] font-semibold text-earth-600 mb-1">
-                Your Name
+                {t('settings', 'ownerName', 'Your Name')}
               </label>
               <input
                 type="text"
@@ -190,13 +190,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 onClick={() => setIsCustomizing(false)}
                 className="px-3 py-1.5 rounded-lg border border-earth-300 text-xs"
               >
-                Back
+                {t('common', 'cancel', 'Back')}
               </button>
               <button
                 type="submit"
                 className="px-5 py-1.5 rounded-lg bg-rangoli-500 text-white font-bold text-xs shadow-sm"
               >
-                Launch KINETIC OS
+                {t('landing', 'launchDemo', 'Launch KINETIC OS')}
               </button>
             </div>
           </form>

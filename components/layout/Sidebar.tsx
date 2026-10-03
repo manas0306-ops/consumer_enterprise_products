@@ -72,18 +72,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const navItems: NavItem[] = [
-    { id: 'dashboard', label: t('dashboard', 'title') || 'Dashboard', icon: LayoutDashboard },
-    { id: 'assistant', label: t('assistant', 'title') || 'AI Assistant', icon: Sparkles, highlight: true },
-    { id: 'sales', label: 'Sales & Invoices', icon: ShoppingBag },
-    { id: 'purchases', label: 'Purchases / Mal', icon: Truck },
-    { id: 'inventory', label: t('inventory', 'title') || 'Inventory (Stock)', icon: PackageSearch },
-    { id: 'customers', label: t('customers', 'title') || 'Customers & Khata', icon: Users },
-    { id: 'receivables', label: t('receivables', 'title') || 'Udhar / Receivables', icon: WalletCards },
-    { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-    { id: 'insights', label: 'AI Insights', icon: Lightbulb },
-    { id: 'alerts', label: t('alerts', 'title') || 'Alerts', icon: Bell, badge: activeAlertsCount },
-    { id: 'documents', label: t('documents', 'title') || 'Bills & Documents', icon: FileText },
-    { id: 'settings', label: t('settings', 'title') || 'Settings & Language', icon: Settings },
+    { id: 'dashboard', label: t('nav', 'dashboard', 'Dashboard'), icon: LayoutDashboard },
+    { id: 'assistant', label: t('nav', 'assistant', 'AI Assistant'), icon: Sparkles, highlight: true },
+    { id: 'sales', label: t('nav', 'sales', 'Sales & Invoices'), icon: ShoppingBag },
+    { id: 'purchases', label: t('nav', 'purchases', 'Purchases / Mal'), icon: Truck },
+    { id: 'inventory', label: t('nav', 'inventory', 'Inventory (Stock)'), icon: PackageSearch },
+    { id: 'customers', label: t('nav', 'customers', 'Customers & Khata'), icon: Users },
+    { id: 'receivables', label: t('nav', 'receivables', 'Udhar / Receivables'), icon: WalletCards },
+    { id: 'analytics', label: t('nav', 'analytics', 'Analytics'), icon: TrendingUp },
+    { id: 'insights', label: t('nav', 'insights', 'AI Insights'), icon: Lightbulb },
+    { id: 'alerts', label: t('nav', 'alerts', 'Alerts'), icon: Bell, badge: activeAlertsCount },
+    { id: 'documents', label: t('nav', 'documents', 'Bills & Documents'), icon: FileText },
+    { id: 'settings', label: t('nav', 'settings', 'Settings & Language'), icon: Settings },
   ];
 
   const handleSelect = (tab: ActiveTab) => {
@@ -207,7 +207,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               title="Reset sample Kirana store dataset for presentation"
               className="text-[11px] font-semibold text-rangoli-600 hover:text-rangoli-800 flex items-center gap-1 hover:underline"
             >
-              <RotateCcw className="w-3 h-3" /> Reset Demo
+              <RotateCcw className="w-3 h-3" /> {t('nav', 'resetDemo', 'Reset Demo')}
             </button>
           </div>
 
@@ -216,7 +216,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gradient-to-r from-rangoli-500 to-rangoli-600 text-white text-xs font-semibold shadow-sm hover:from-rangoli-600 hover:to-rangoli-700 transition-all"
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>Speak or Type to AI</span>
+            <span>{t('nav', 'speakOrType', 'Speak or Type to AI')}</span>
           </button>
         </div>
       </aside>

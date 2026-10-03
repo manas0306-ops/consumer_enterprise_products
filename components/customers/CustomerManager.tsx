@@ -20,7 +20,7 @@ import { RangoliCorner } from '@/components/rangoli/RangoliMotif';
 import { PrintableInvoiceModal } from '@/components/invoices/PrintableInvoiceModal';
 
 export const CustomerManager: React.FC = () => {
-  const { customers, addCustomer, updateCustomer, sales, business } = useBusiness();
+  const { customers, addCustomer, updateCustomer, sales, business, uiLanguage, t } = useBusiness();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -72,10 +72,10 @@ export const CustomerManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
         <div>
           <h2 className="text-xl font-bold text-earth-900 font-serif">
-            Customer Directory & Khata
+            {t('customers', 'title', 'Customer Directory & Khata')}
           </h2>
           <p className="text-xs text-earth-600">
-            Customer relationship records, purchase histories, credit ceilings, and contact directories
+            {t('customers', 'subtitle', 'Customer relationship records, purchase histories, credit ceilings, and contact directories')}
           </p>
         </div>
 
@@ -84,7 +84,7 @@ export const CustomerManager: React.FC = () => {
           className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-rangoli-500 hover:bg-rangoli-600 text-white text-xs font-bold shadow-md hover:shadow-rangoli transition-all"
         >
           <Plus className="w-4 h-4" />
-          <span>Add New Customer</span>
+          <span>{t('customers', 'addCustomer', 'Add New Customer')}</span>
         </button>
       </div>
 
@@ -95,7 +95,7 @@ export const CustomerManager: React.FC = () => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by customer name or mobile number..."
+          placeholder={t('customers', 'searchPlaceholder', 'Search by customer name or mobile number...')}
           className="w-full pl-9 pr-3 py-2 rounded-xl border border-rangoli-200 bg-white text-xs text-earth-900 placeholder:text-earth-400 focus:outline-none focus:ring-1 focus:ring-rangoli-500"
         />
       </div>
@@ -118,7 +118,7 @@ export const CustomerManager: React.FC = () => {
                     </h3>
                     <div className="flex items-center gap-1.5 text-xs text-earth-500 mt-0.5">
                       <Phone className="w-3 h-3 text-earth-400" />
-                      <span>{cust.phone || 'No phone added'}</span>
+                      <span>{cust.phone || t('common', 'none', 'No phone')}</span>
                     </div>
                   </div>
 
@@ -129,7 +129,7 @@ export const CustomerManager: React.FC = () => {
                         : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                     }`}
                   >
-                    {hasDebt ? `₹${cust.amountPending} Due` : 'Clear Khata'}
+                    {hasDebt ? `₹${cust.amountPending} ${t('receivables', 'due', 'Due')}` : t('customers', 'clearKhata', 'Clear Khata')}
                   </span>
                 </div>
 
@@ -143,13 +143,13 @@ export const CustomerManager: React.FC = () => {
 
               <div className="pt-3 border-t border-rangoli-100 grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[10px] text-earth-500 uppercase tracking-wider block">Total Purchases</span>
+                  <span className="text-[10px] text-earth-500 uppercase tracking-wider block">{t('customers', 'totalPurchases', 'Total Purchases')}</span>
                   <span className="font-bold text-earth-900 font-serif">
                     ₹{cust.totalPurchases.toLocaleString('en-IN')}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-earth-500 uppercase tracking-wider block">Pending Udhar</span>
+                  <span className="text-[10px] text-earth-500 uppercase tracking-wider block">{t('customers', 'amountPending', 'Pending Udhar')}</span>
                   <span className={`font-bold font-serif ${hasDebt ? 'text-danger' : 'text-success'}`}>
                     ₹{cust.amountPending.toLocaleString('en-IN')}
                   </span>
@@ -184,19 +184,19 @@ export const CustomerManager: React.FC = () => {
             {/* Quick Metrics */}
             <div className="grid grid-cols-3 gap-3 bg-ivory-50 p-4 rounded-xl border border-rangoli-200/70 text-xs mb-4">
               <div>
-                <span className="text-earth-500 block text-[11px]">Lifetime Purchases</span>
+                <span className="text-earth-500 block text-[11px]">{t('customers', 'totalPurchases', 'Total Purchases')}</span>
                 <span className="text-base font-bold text-earth-900 font-serif">
                   ₹{selectedCustomer.totalPurchases.toLocaleString('en-IN')}
                 </span>
               </div>
               <div>
-                <span className="text-earth-500 block text-[11px]">Amount Paid</span>
+                <span className="text-earth-500 block text-[11px]">{t('customers', 'amountPaid', 'Amount Paid')}</span>
                 <span className="text-base font-bold text-success font-serif">
                   ₹{selectedCustomer.amountPaid.toLocaleString('en-IN')}
                 </span>
               </div>
               <div>
-                <span className="text-earth-500 block text-[11px]">Current Outstanding</span>
+                <span className="text-earth-500 block text-[11px]">{t('customers', 'amountPending', 'Pending Udhar')}</span>
                 <span className="text-base font-bold text-danger font-serif">
                   ₹{selectedCustomer.amountPending.toLocaleString('en-IN')}
                 </span>
@@ -205,12 +205,12 @@ export const CustomerManager: React.FC = () => {
 
             {/* Purchase History */}
             <h4 className="text-xs font-bold uppercase tracking-wider text-earth-600 mb-2">
-              Purchase History & Invoices
+              {t('customers', 'history', 'Purchase & Ledger History')}
             </h4>
 
             {customerSales.length === 0 ? (
               <p className="text-xs text-earth-500 py-3 italic">
-                No past transactions recorded for this customer yet.
+                {t('customers', 'noTransactions', 'No past transactions recorded for this customer yet.')}
               </p>
             ) : (
               <div className="space-y-2">
@@ -232,16 +232,16 @@ export const CustomerManager: React.FC = () => {
                           ₹{s.totalAmount.toLocaleString('en-IN')}
                         </div>
                         <div className="text-[10px] text-earth-400">
-                          {new Date(s.createdAt).toLocaleDateString('en-IN')}
+                          {new Date(s.createdAt).toLocaleDateString(uiLanguage || 'en-IN')}
                         </div>
                       </div>
                       <button
                         onClick={() => setActiveInvoice(s)}
                         className="p-1.5 rounded-lg border border-rangoli-200 bg-white hover:bg-rangoli-50 text-rangoli-700 text-xs font-semibold flex items-center gap-1 shadow-2xs transition-colors shrink-0"
-                        title="View & Print Bill / Invoice"
+                        title={t('invoices', 'printInvoice', 'View & Print Bill / Invoice')}
                       >
                         <FileText className="w-3.5 h-3.5" />
-                        <span>Bill</span>
+                        <span>{t('sales', 'print', 'Bill')}</span>
                       </button>
                     </div>
                   </div>
@@ -254,7 +254,7 @@ export const CustomerManager: React.FC = () => {
                 onClick={() => setSelectedCustomer(null)}
                 className="px-4 py-2 rounded-xl bg-earth-900 text-white text-xs font-bold"
               >
-                Close Profile
+                {t('common', 'close', 'Close Profile')}
               </button>
             </div>
           </div>
@@ -266,12 +266,12 @@ export const CustomerManager: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-earth-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-rangoli-300 shadow-rangoli-lg max-w-md w-full p-6 animate-in fade-in zoom-in-95">
             <h3 className="text-base font-bold text-earth-900 font-serif mb-4">
-              Add New Customer to Khata
+              {t('customers', 'addCustomer', 'Add New Customer')}
             </h3>
 
             <form onSubmit={handleSaveCustomer} className="space-y-3 text-xs">
               <div>
-                <label className="block text-earth-700 font-semibold mb-1">Customer Full Name *</label>
+                <label className="block text-earth-700 font-semibold mb-1">{t('customers', 'customerName', 'Customer Full Name *')}</label>
                 <input
                   type="text"
                   required
@@ -283,7 +283,7 @@ export const CustomerManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-earth-700 font-semibold mb-1">Mobile / WhatsApp Number</label>
+                <label className="block text-earth-700 font-semibold mb-1">{t('customers', 'phone', 'Mobile / WhatsApp Number')}</label>
                 <input
                   type="text"
                   value={formState.phone}
@@ -294,7 +294,7 @@ export const CustomerManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-earth-700 font-semibold mb-1">Local Address / Landmark</label>
+                <label className="block text-earth-700 font-semibold mb-1">{t('customers', 'address', 'Local Address / Landmark')}</label>
                 <input
                   type="text"
                   value={formState.address}
@@ -305,7 +305,7 @@ export const CustomerManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-earth-700 font-semibold mb-1">Credit Limit Ceiling (₹)</label>
+                <label className="block text-earth-700 font-semibold mb-1">{t('customers', 'creditLimit', 'Credit Limit Ceiling (₹)')}</label>
                 <input
                   type="number"
                   value={formState.creditLimit}
@@ -320,13 +320,13 @@ export const CustomerManager: React.FC = () => {
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 rounded-xl border border-earth-300 text-earth-700 font-semibold"
                 >
-                  Cancel
+                  {t('common', 'cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-rangoli-500 hover:bg-rangoli-600 text-white font-bold"
                 >
-                  Save Customer
+                  {t('customers', 'saveCustomer', 'Save Customer')}
                 </button>
               </div>
             </form>

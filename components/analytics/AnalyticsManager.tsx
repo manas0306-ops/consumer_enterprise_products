@@ -27,7 +27,7 @@ import { useBusiness } from '@/context/BusinessContext';
 import { RangoliCorner } from '@/components/rangoli/RangoliMotif';
 
 export const AnalyticsManager: React.FC = () => {
-  const { sales, products, customers, receivables } = useBusiness();
+  const { sales, products, customers, receivables, t } = useBusiness();
 
   const [timeframe, setTimeframe] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('WEEKLY');
 
@@ -68,6 +68,12 @@ export const AnalyticsManager: React.FC = () => {
     { week: 'Current Week', sales: totalSalesRevenue || 18900, profit: estimatedGrossProfit || 4200 },
   ];
 
+  const timeframeLabels: Record<'DAILY' | 'WEEKLY' | 'MONTHLY', string> = {
+    DAILY: t('analytics', 'daily', 'Daily'),
+    WEEKLY: t('analytics', 'weekly', 'Weekly'),
+    MONTHLY: t('analytics', 'monthly', 'Monthly'),
+  };
+
   return (
     <div className="relative space-y-6 pb-12">
       <RangoliCorner position="top-right" className="opacity-15 absolute top-0 right-0" />
@@ -76,26 +82,26 @@ export const AnalyticsManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
         <div>
           <h2 className="text-xl font-bold text-earth-900 font-serif">
-            Financial Analytics & Performance
+            {t('analytics', 'title', 'Financial Analytics & Performance')}
           </h2>
           <p className="text-xs text-earth-600">
-            Real-time turnover trends, gross margin computation, and category revenue distribution
+            {t('analytics', 'subtitle', 'Real-time turnover trends, gross margin computation, and category revenue distribution')}
           </p>
         </div>
 
         {/* Timeframe Toggle */}
         <div className="flex gap-1 bg-ivory-100 p-1 rounded-xl border border-rangoli-200">
-          {(['DAILY', 'WEEKLY', 'MONTHLY'] as const).map((t) => (
+          {(['DAILY', 'WEEKLY', 'MONTHLY'] as const).map((tKey) => (
             <button
-              key={t}
-              onClick={() => setTimeframe(t)}
+              key={tKey}
+              onClick={() => setTimeframe(tKey)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                timeframe === t
+                timeframe === tKey
                   ? 'bg-rangoli-500 text-white shadow-xs'
                   : 'text-earth-700 hover:text-earth-900'
               }`}
             >
-              {t}
+              {timeframeLabels[tKey]}
             </button>
           ))}
         </div>
@@ -105,37 +111,37 @@ export const AnalyticsManager: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
           <span className="text-xs font-semibold uppercase tracking-wider text-earth-500 block mb-1">
-            Total Sales Turnover
+            {t('analytics', 'grossRevenue', 'Total Sales Turnover')}
           </span>
           <div className="text-2xl font-bold text-earth-900 font-serif">
             ₹{totalSalesRevenue.toLocaleString('en-IN')}
           </div>
           <p className="text-[11px] text-earth-500 mt-1">
-            Aggregated across {sales.length} customer invoices
+            {sales.length} {t('analytics', 'invoicesAggregated', 'customer invoices aggregated')}
           </p>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
           <span className="text-xs font-semibold uppercase tracking-wider text-earth-500 block mb-1">
-            Estimated Gross Margin
+            {t('analytics', 'estimatedProfit', 'Estimated Gross Margin')}
           </span>
           <div className="text-2xl font-bold text-success font-serif">
             ₹{estimatedGrossProfit.toLocaleString('en-IN')}
           </div>
           <p className="text-[11px] text-earth-500 mt-1">
-            ~{profitMarginPct}% average retail markup over mandi procurement
+            ~{profitMarginPct}% {t('analytics', 'retailMarkup', 'average retail markup')}
           </p>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
           <span className="text-xs font-semibold uppercase tracking-wider text-earth-500 block mb-1">
-            Customer Khata Base
+            {t('customers', 'title', 'Customer Khata Base')}
           </span>
           <div className="text-2xl font-bold text-rangoli-700 font-serif">
-            {customers.length} Regulars
+            {customers.length} {t('analytics', 'regularCustomers', 'Regulars')}
           </div>
           <p className="text-[11px] text-earth-500 mt-1">
-            {customers.filter((c) => c.amountPending === 0).length} customers currently debt-free
+            {customers.filter((c) => c.amountPending === 0).length} {t('analytics', 'debtFreeCustomers', 'customers currently debt-free')}
           </p>
         </div>
       </div>
@@ -145,10 +151,10 @@ export const AnalyticsManager: React.FC = () => {
         {/* Chart 1: Revenue vs Estimated Profit */}
         <div className="bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
           <h3 className="text-base font-bold text-earth-900 font-serif mb-1">
-            Turnover vs Gross Profit
+            {t('analytics', 'salesVelocity', 'Turnover vs Gross Profit')}
           </h3>
           <p className="text-xs text-earth-500 mb-4">
-            Weekly performance comparison
+            {t('analytics', 'weekly', 'Weekly performance comparison')}
           </p>
 
           <div className="h-64 w-full">
@@ -171,8 +177,8 @@ export const AnalyticsManager: React.FC = () => {
                   }}
                 />
                 <Legend />
-                <Bar dataKey="sales" name="Sales Turnover" fill="#C88A24" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="profit" name="Gross Profit" fill="#1B7A43" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="sales" name={t('analytics', 'grossRevenue', 'Sales Turnover')} fill="#C88A24" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="profit" name={t('analytics', 'estimatedProfit', 'Gross Profit')} fill="#1B7A43" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -181,10 +187,10 @@ export const AnalyticsManager: React.FC = () => {
         {/* Chart 2: Category Revenue Breakdown */}
         <div className="bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
           <h3 className="text-base font-bold text-earth-900 font-serif mb-1">
-            Revenue by Category
+            {t('analytics', 'categorySales', 'Revenue by Category')}
           </h3>
           <p className="text-xs text-earth-500 mb-4">
-            Product categories generating the highest cashflow
+            {t('dashboard', 'topProductsSub', 'Product categories generating the highest cashflow')}
           </p>
 
           <div className="h-64 w-full">
@@ -193,7 +199,7 @@ export const AnalyticsManager: React.FC = () => {
                 <XAxis type="number" stroke="#8A7162" fontSize={11} tickFormatter={(val) => `₹${val}`} />
                 <YAxis dataKey="category" type="category" stroke="#8A7162" fontSize={11} tickLine={false} width={100} />
                 <Tooltip
-                  formatter={(val: number) => [`₹${val.toLocaleString('en-IN')}`, 'Category Revenue']}
+                  formatter={(val: number) => [`₹${val.toLocaleString('en-IN')}`, t('analytics', 'categorySales', 'Revenue')]}
                   contentStyle={{
                     backgroundColor: '#FAF6EE',
                     borderColor: '#C88A24',

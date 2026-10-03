@@ -25,7 +25,7 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const { products, customers, sales, receivables, resetToDemo } = useBusiness();
+  const { products, customers, sales, receivables, resetToDemo, t } = useBusiness();
 
   // Find live dynamic values for the verification steps
   const riceProduct = products.find((p) => p.name.toLowerCase().includes('rice'));
@@ -35,9 +35,9 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
   const steps = [
     {
       num: 1,
-      title: 'Inspect Kirana Dashboard',
-      description: 'Observe live Today Sales, Udhar balance, and Inventory stock levels.',
-      actionLabel: 'Go to Dashboard',
+      title: t('demoGuide', 'step1Title', 'Inspect Kirana Dashboard'),
+      description: t('demoGuide', 'step1Desc', 'Observe live Today Sales, Udhar balance, and Inventory stock levels.'),
+      actionLabel: t('demoGuide', 'step1Action', 'Go to Dashboard'),
       action: () => {
         setActiveTab('dashboard');
         toggleStep(1);
@@ -45,9 +45,9 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
     },
     {
       num: 2,
-      title: 'Voice / NLP Sale Execution',
-      description: 'Voice or text: "Ramesh ko 5 kilo rice 600 rupaye ka diya udhar".',
-      actionLabel: 'Trigger AI Assistant',
+      title: t('demoGuide', 'step2Title', 'Voice / NLP Sale Execution'),
+      description: t('demoGuide', 'step2Desc', 'Voice or text: "Ramesh ko 5 kilo rice 600 rupaye ka diya udhar".'),
+      actionLabel: t('demoGuide', 'step2Action', 'Trigger AI Assistant'),
       action: () => {
         setActiveTab('assistant');
         onRunVoiceSample('Ramesh ko 5 kilo rice 600 rupaye ka diya udhar');
@@ -56,9 +56,9 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
     },
     {
       num: 3,
-      title: 'Verify Inventory Decrement (Rice: 100kg → 95kg)',
-      description: `Current Rice Stock: ${riceProduct ? `${riceProduct.quantity} ${riceProduct.unit}` : '95 kg'}.`,
-      actionLabel: 'Check Stock',
+      title: t('demoGuide', 'step3Title', 'Verify Inventory Decrement (Rice: 100kg → 95kg)'),
+      description: `${t('demoGuide', 'step3Desc', 'Current Rice Stock:')} ${riceProduct ? `${riceProduct.quantity} ${riceProduct.unit}` : '95 kg'}.`,
+      actionLabel: t('demoGuide', 'step3Action', 'Check Stock'),
       action: () => {
         setActiveTab('inventory');
         toggleStep(3);
@@ -66,9 +66,9 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
     },
     {
       num: 4,
-      title: 'Verify Udhar / Receivables Ledger (+₹600)',
-      description: `Ramesh pending balance: ₹${rameshCustomer?.amountPending.toLocaleString('en-IN') || 600}.`,
-      actionLabel: 'Check Udhar',
+      title: t('demoGuide', 'step4Title', 'Verify Udhar / Receivables Ledger (+₹600)'),
+      description: `${t('demoGuide', 'step4Desc', 'Ramesh pending balance:')} ₹${rameshCustomer?.amountPending.toLocaleString('en-IN') || 600}.`,
+      actionLabel: t('demoGuide', 'step4Action', 'Check Udhar'),
       action: () => {
         setActiveTab('receivables');
         toggleStep(4);
@@ -76,9 +76,9 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
     },
     {
       num: 5,
-      title: 'Ask AI: "Who owes me money?"',
-      description: 'AI retrieves Ramesh & all indebted customers from bahi-khata.',
-      actionLabel: 'Run AI Query',
+      title: t('demoGuide', 'step5Title', 'Ask AI: "Who owes me money?"'),
+      description: t('demoGuide', 'step5Desc', 'AI retrieves Ramesh & all indebted customers from bahi-khata.'),
+      actionLabel: t('demoGuide', 'step5Action', 'Run AI Query'),
       action: () => {
         setActiveTab('assistant');
         onRunVoiceSample('Who owes me money?');
@@ -87,9 +87,9 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
     },
     {
       num: 6,
-      title: 'Ask AI: "Which products are running low?"',
-      description: 'AI inspects database reorder levels and identifies low stock items.',
-      actionLabel: 'Run Stock Query',
+      title: t('demoGuide', 'step6Title', 'Ask AI: "Which products are running low?"'),
+      description: t('demoGuide', 'step6Desc', 'AI inspects database reorder levels and identifies low stock items.'),
+      actionLabel: t('demoGuide', 'step6Action', 'Run Stock Query'),
       action: () => {
         setActiveTab('assistant');
         onRunVoiceSample('Which products are running low?');
@@ -117,13 +117,13 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
           </div>
           <div>
             <div className="text-xs font-bold font-serif flex items-center gap-1.5">
-              <span>IIIT-Delhi Demo Script</span>
+              <span>{t('demoGuide', 'demoScript', 'IIIT-Delhi Demo Script')}</span>
               <span className="text-[10px] font-sans font-semibold px-1.5 py-0.2 rounded-full bg-rangoli-500 text-white">
                 PS #4
               </span>
             </div>
             <div className="text-[10px] text-earth-300">
-              {completedSteps.length} of {steps.length} test steps validated
+              {completedSteps.length} of {steps.length} {t('demoGuide', 'testStepsValidated', 'test steps validated')}
             </div>
           </div>
         </div>
@@ -136,7 +136,7 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
         <div className="mt-2 bg-white rounded-2xl border border-rangoli-300 shadow-rangoli-lg p-4 space-y-3 animate-in fade-in slide-in-from-bottom-2 text-xs max-h-[75vh] overflow-y-auto">
           <div className="flex items-center justify-between border-b border-rangoli-100 pb-2">
             <span className="font-bold text-earth-900 font-serif">
-              3-Minute Hackathon Demo Flow
+              {t('demoGuide', 'demoFlowTitle', '3-Minute Hackathon Demo Flow')}
             </span>
             <button
               onClick={() => {
@@ -145,7 +145,7 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
               }}
               className="text-[11px] text-rangoli-600 hover:text-rangoli-800 font-semibold flex items-center gap-1"
             >
-              <RotateCcw className="w-3 h-3" /> Reset
+              <RotateCcw className="w-3 h-3" /> {t('common', 'reset', 'Reset')}
             </button>
           </div>
 

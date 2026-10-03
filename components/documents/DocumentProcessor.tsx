@@ -18,7 +18,7 @@ import { AIIntentResult } from '@/types';
 import { RangoliCorner, RangoliLoader } from '@/components/rangoli/RangoliMotif';
 
 export const DocumentProcessor: React.FC = () => {
-  const { products, customers, recordSale, recordTelemetry } = useBusiness();
+  const { products, customers, recordSale, recordTelemetry, t } = useBusiness();
 
   const [rawText, setRawText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -89,14 +89,14 @@ export const DocumentProcessor: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm">
         <div className="flex items-center gap-2">
           <span className="text-xs uppercase font-bold tracking-widest text-rangoli-700 bg-rangoli-100 px-2 py-0.5 rounded-full border border-rangoli-300">
-            Document Intelligence
+            {t('nav', 'documents', 'Document Intelligence')}
           </span>
         </div>
         <h2 className="text-xl font-bold text-earth-900 font-serif mt-1">
-          Informal Bill & Parchi Scanner
+          {t('documents', 'title', 'Informal Bill & Parchi Scanner')}
         </h2>
         <p className="text-xs text-earth-600 mt-0.5">
-          Converts informal shop notes, supplier slips, and handwritten kacha-bills into structured database transactions
+          {t('documents', 'subtitle', 'Converts informal shop notes, supplier slips, and handwritten kacha-bills into structured database transactions')}
         </p>
       </div>
 
@@ -104,7 +104,7 @@ export const DocumentProcessor: React.FC = () => {
       <div className="space-y-2">
         <span className="text-xs font-bold text-earth-700 uppercase tracking-wider flex items-center gap-1.5">
           <Clipboard className="w-3.5 h-3.5 text-rangoli-500" />
-          Load Sample Informal Kirana Notes:
+          {t('documents', 'trySamples', 'Load Sample Informal Kirana Notes:')}
         </span>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {sampleSlips.map((slip, i) => (
@@ -131,13 +131,13 @@ export const DocumentProcessor: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm space-y-4">
         <div>
           <label className="block text-xs font-bold text-earth-700 uppercase tracking-wider mb-2">
-            Paste Informal Note or Extracted Text:
+            {t('documents', 'pasteSlip', 'Paste Informal Note or Extracted Text:')}
           </label>
           <textarea
             rows={3}
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
-            placeholder="Type or paste informal note, e.g.: 'Ramesh 5 rice 600 udhar agle hafte'..."
+            placeholder={t('documents', 'dropPrompt', "Type or paste informal note, e.g.: 'Ramesh 5 rice 600 udhar agle hafte'...")}
             className="w-full p-3 rounded-xl border border-rangoli-300 text-xs text-earth-900 font-medium placeholder:text-earth-400 focus:outline-none focus:ring-1 focus:ring-rangoli-500"
           />
         </div>
@@ -147,7 +147,7 @@ export const DocumentProcessor: React.FC = () => {
           <div className="flex items-center gap-2">
             <label className="px-3.5 py-2 rounded-xl border border-rangoli-300 hover:bg-rangoli-50 text-earth-800 text-xs font-semibold cursor-pointer transition-colors flex items-center gap-2">
               <FileImage className="w-4 h-4 text-rangoli-600" />
-              <span>Upload Bill / Photo</span>
+              <span>{t('documents', 'stepUpload', 'Upload Bill / Photo')}</span>
               <input
                 type="file"
                 accept="image/*,.pdf"
@@ -162,7 +162,9 @@ export const DocumentProcessor: React.FC = () => {
                 }}
               />
             </label>
-            <span className="text-[11px] text-earth-400">Supports JPG, PNG, PDF</span>
+            <span className="text-[11px] text-earth-400">
+              {t('documents', 'supportedFormats', 'Supports JPG, PNG, PDF')}
+            </span>
           </div>
 
           <button
@@ -171,7 +173,7 @@ export const DocumentProcessor: React.FC = () => {
             className="px-5 py-2 rounded-xl bg-rangoli-500 hover:bg-rangoli-600 disabled:opacity-50 text-white text-xs font-bold shadow-md hover:shadow-rangoli transition-all flex items-center gap-1.5"
           >
             <Sparkles className="w-4 h-4" />
-            <span>Process & Extract Entities</span>
+            <span>{t('documents', 'extract', 'Process & Extract Entities')}</span>
           </button>
         </div>
       </div>
@@ -179,7 +181,7 @@ export const DocumentProcessor: React.FC = () => {
       {/* Processing Loader */}
       {isProcessing && (
         <div className="bg-white p-6 rounded-2xl border border-rangoli-200 shadow-sm flex items-center justify-center">
-          <RangoliLoader size={32} label="Executing OCR & Entity Extraction Pipeline..." />
+          <RangoliLoader size={32} label={t('documents', 'stepExtract', 'Executing OCR & Entity Extraction Pipeline...')} />
         </div>
       )}
 
@@ -190,35 +192,35 @@ export const DocumentProcessor: React.FC = () => {
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-success" />
               <h3 className="text-base font-bold text-earth-900 font-serif">
-                Extracted Structured Business Transaction
+                {t('documents', 'extractedCard', 'Extracted Structured Business Transaction')}
               </h3>
             </div>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-success/10 text-success font-bold">
-              High Confidence (96%)
+              {t('documents', 'highConfidence', 'High Confidence (96%)')}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-ivory-50 p-4 rounded-xl border border-rangoli-200 text-xs">
             <div>
-              <span className="text-earth-500 block text-[11px]">Customer</span>
+              <span className="text-earth-500 block text-[11px]">{t('assistant', 'customer', 'Customer')}</span>
               <span className="font-bold text-sm text-earth-900">
                 {extractedResult.extractedEntities.customerName || 'Customer'}
               </span>
             </div>
             <div>
-              <span className="text-earth-500 block text-[11px]">Product</span>
+              <span className="text-earth-500 block text-[11px]">{t('assistant', 'product', 'Product')}</span>
               <span className="font-bold text-sm text-earth-900">
                 {extractedResult.extractedEntities.productName}
               </span>
             </div>
             <div>
-              <span className="text-earth-500 block text-[11px]">Quantity</span>
+              <span className="text-earth-500 block text-[11px]">{t('assistant', 'quantity', 'Quantity')}</span>
               <span className="font-bold text-sm text-earth-900">
                 {extractedResult.extractedEntities.quantity} {extractedResult.extractedEntities.unit}
               </span>
             </div>
             <div>
-              <span className="text-earth-500 block text-[11px]">Amount & Payment</span>
+              <span className="text-earth-500 block text-[11px]">{t('assistant', 'amount', 'Amount & Payment')}</span>
               <span className="font-bold text-base text-rangoli-700 font-serif">
                 ₹{extractedResult.extractedEntities.amount} ({extractedResult.extractedEntities.paymentStatus?.toUpperCase()})
               </span>
@@ -230,14 +232,14 @@ export const DocumentProcessor: React.FC = () => {
               onClick={() => setExtractedResult(null)}
               className="px-4 py-2 rounded-xl border border-earth-300 text-earth-700 text-xs font-semibold hover:bg-earth-50"
             >
-              Discard
+              {t('common', 'cancel', 'Discard')}
             </button>
             <button
               onClick={handleCommitTransaction}
               className="px-5 py-2 rounded-xl bg-success hover:bg-emerald-700 text-white text-xs font-bold shadow-sm flex items-center gap-1.5"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Confirm & Write to Relational DB</span>
+              <span>{t('documents', 'confirm', 'Confirm & Write to Relational DB')}</span>
             </button>
           </div>
         </div>

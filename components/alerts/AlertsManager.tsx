@@ -17,9 +17,41 @@ import { RangoliCorner } from '@/components/rangoli/RangoliMotif';
 export const AlertsManager: React.FC<{ onNavigateTo?: (tab: string) => void }> = ({
   onNavigateTo,
 }) => {
-  const { alerts, dismissAlert } = useBusiness();
+  const { alerts, dismissAlert, t } = useBusiness();
 
   const activeAlerts = alerts.filter((a) => !a.dismissed);
+
+  const getAlertTitle = (a: typeof alerts[0]) => {
+    if (a.type === 'out_of_stock') return t('alerts', 'stockDepleted', 'Stock Depleted');
+    if (a.type === 'low_stock') return t('alerts', 'lowStockThreshold', 'Low Stock Threshold Reached');
+    if (a.type === 'overdue_payment') return t('alerts', 'overduePayment', 'Overdue Udhar Payment');
+    if (a.type === 'credit_threshold') return t('alerts', 'creditLimitExceeded', 'Credit Limit Exceeded');
+    return a.title;
+  };
+
+  const getAlertMessage = (a: typeof alerts[0]) => {
+    if (a.type === 'out_of_stock') {
+      return `${a.actionableEntity?.name || ''} ${t('alerts', 'outOfStockMsg', 'is completely OUT OF STOCK (0 units). Customers cannot purchase.')}`;
+    }
+    if (a.type === 'low_stock') {
+      return `${a.actionableEntity?.name || ''} ${t('alerts', 'lowStockMsg', 'has reached critical reorder threshold. Replenish immediately.')}`;
+    }
+    if (a.type === 'overdue_payment') {
+      return `${a.actionableEntity?.name || ''} ${t('alerts', 'overduePaymentMsg', 'has an overdue balance exceeding payment terms.')}`;
+    }
+    if (a.type === 'credit_threshold') {
+      return `${a.actionableEntity?.name || ''} ${t('alerts', 'creditLimitMsg', 'has exceeded the maximum allowable credit ceiling.')}`;
+    }
+    return a.message;
+  };
+
+  const getAlertTypeLabel = (type: string) => {
+    if (type === 'out_of_stock') return t('common', 'outOfStock', 'Out of Stock');
+    if (type === 'low_stock') return t('common', 'lowStock', 'Low Stock');
+    if (type === 'overdue_payment') return t('common', 'overdue', 'Overdue');
+    if (type === 'credit_threshold') return t('customers', 'creditLimit', 'Credit Limit');
+    return type.replace('_', ' ');
+  };
 
   return (
     <div className="relative space-y-6 pb-12">
@@ -29,15 +61,15 @@ export const AlertsManager: React.FC<{ onNavigateTo?: (tab: string) => void }> =
       <div className="bg-white p-5 rounded-2xl border border-rangoli-200/90 shadow-sm flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-earth-900 font-serif">
-            Live Actionable System Alerts
+            {t('alerts', 'title', 'Live Actionable System Alerts')}
           </h2>
           <p className="text-xs text-earth-600">
-            Real-time trigger alerts generated from database thresholds (stock depletion, overdue credit, high debt risk)
+            {t('alerts', 'subtitle', 'Real-time trigger alerts generated from database thresholds (stock depletion, overdue credit, high debt risk)')}
           </p>
         </div>
 
         <span className="text-xs px-3 py-1 rounded-full font-bold bg-danger/10 text-danger border border-danger/20">
-          {activeAlerts.length} Active Alerts
+          {activeAlerts.length} {t('alerts', 'activeAlerts', 'Active Alerts')}
         </span>
       </div>
 
@@ -48,10 +80,10 @@ export const AlertsManager: React.FC<{ onNavigateTo?: (tab: string) => void }> =
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <h3 className="text-base font-bold text-earth-900 font-serif">
-            All Clear! No Critical Alerts
+            {t('alerts', 'allClear', 'All Clear! No Critical Alerts')}
           </h3>
           <p className="text-xs text-earth-500 max-w-sm mx-auto">
-            Your stock levels are above reorder thresholds, and all active receivables are within agreed terms.
+            {t('alerts', 'allClearSub', 'Your stock levels are above reorder thresholds, and all active receivables are within agreed terms.')}
           </p>
         </div>
       ) : (
@@ -78,13 +110,13 @@ export const AlertsManager: React.FC<{ onNavigateTo?: (tab: string) => void }> =
 
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-sm font-serif">{alert.title}</h4>
+                      <h4 className="font-bold text-sm font-serif">{getAlertTitle(alert)}</h4>
                       <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-white/80 border border-current">
-                        {alert.type.replace('_', ' ')}
+                        {getAlertTypeLabel(alert.type)}
                       </span>
                     </div>
                     <p className="text-xs mt-1 text-earth-700 leading-relaxed">
-                      {alert.message}
+                      {getAlertMessage(alert)}
                     </p>
                   </div>
                 </div>
@@ -95,7 +127,7 @@ export const AlertsManager: React.FC<{ onNavigateTo?: (tab: string) => void }> =
                       onClick={() => onNavigateTo('purchases')}
                       className="px-3 py-1.5 rounded-xl bg-rangoli-500 hover:bg-rangoli-600 text-white text-xs font-bold transition-all shadow-xs"
                     >
-                      Record Purchase
+                      {t('purchases', 'recordNewPurchase', 'Record Purchase')}
                     </button>
                   )}
 
@@ -104,14 +136,14 @@ export const AlertsManager: React.FC<{ onNavigateTo?: (tab: string) => void }> =
                       onClick={() => onNavigateTo('receivables')}
                       className="px-3 py-1.5 rounded-xl bg-earth-900 hover:bg-earth-800 text-white text-xs font-bold transition-all shadow-xs"
                     >
-                      Collect Payment
+                      {t('receivables', 'settlePayment', 'Collect Payment')}
                     </button>
                   )}
 
                   <button
                     onClick={() => dismissAlert(alert.id)}
                     className="p-1.5 rounded-xl text-earth-400 hover:text-earth-700 hover:bg-black/5 transition-colors"
-                    title="Dismiss alert"
+                    title={t('alerts', 'dismiss', 'Dismiss alert')}
                   >
                     <X className="w-4 h-4" />
                   </button>

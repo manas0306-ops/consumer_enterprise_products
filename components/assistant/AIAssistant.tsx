@@ -294,7 +294,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
         {
           id: `ai_err_${Date.now()}`,
           sender: 'ai',
-          text: 'I processed your business query using KINETIC local deterministic rules.',
+          text:
+            uiLanguage === 'pa-IN'
+              ? 'ਮੈਂ ਕਾਇਨੇਟਿਕ ਲੋਕਲ ਨਿਯਮਾਂ ਅਨੁਸਾਰ ਤੁਹਾਡੀ ਬੇਨਤੀ ਦੀ ਜਾਂਚ ਕਰ ਲਈ ਹੈ।'
+              : uiLanguage === 'hi-IN'
+              ? 'मैंने काइनेटिक स्थानीय नियमों के अनुसार आपके अनुरोध की जांच कर ली है।'
+              : 'I processed your business query using KINETIC local deterministic rules.',
           createdAt: new Date().toISOString(),
         },
       ]);
@@ -391,32 +396,52 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
               className="text-xs text-earth-500 hover:text-earth-800 flex items-center gap-1"
               title="Clear session"
             >
-              <RotateCcw className="w-3 h-3" /> Reset
+              <RotateCcw className="w-3 h-3" /> {t('common', 'reset', 'Reset')}
             </button>
           </div>
 
           {/* Quick Pinned Prompts for Hero Flow Demo */}
           <div className="mt-3">
             <span className="text-[11px] font-bold text-earth-600 uppercase tracking-wider">
-              Hero Flows & Tests
+              {t('assistant', 'heroFlowsTitle', 'Hero Flows & Tests')}
             </span>
             <div className="mt-2 space-y-1.5">
               {[
                 {
-                  label: 'Voice Sale (Hindi -> Punjabi UI)',
-                  text: 'Ramesh ko 5 kilo chawal 600 rupaye mein udhaar diya',
+                  label: t('assistant', 'voiceSaleLabel', 'Voice Sale (Multilingual)'),
+                  text:
+                    uiLanguage === 'pa-IN'
+                      ? 'ਰਮੇਸ਼ ਨੂੰ 5 ਕਿਲੋ ਚੌਲ 600 ਰੁਪਏ ਉਧਾਰ ਦਿੱਤੇ'
+                      : uiLanguage === 'hi-IN'
+                      ? 'रमेश को 5 किलो चावल 600 रुपये में उधार दिया'
+                      : 'Ramesh ko 5 kilo chawal 600 rupaye mein udhaar diya',
                 },
                 {
-                  label: 'Receivables Query (Punjabi)',
-                  text: 'ਮੇਰੇ ਕਿੰਨੇ ਪੈਸੇ ਆਉਣੇ ਬਾਕੀ ਹਨ?',
+                  label: t('assistant', 'receivablesQueryLabel', 'Receivables Query'),
+                  text:
+                    uiLanguage === 'pa-IN'
+                      ? 'ਮੇਰੇ ਕਿੰਨੇ ਪੈਸੇ ਆਉਣੇ ਬਾਕੀ ਹਨ?'
+                      : uiLanguage === 'hi-IN'
+                      ? 'किस-किस का उधार बाकी है?'
+                      : 'Show my pending receivables',
                 },
                 {
-                  label: 'Low Stock Check',
-                  text: 'Rice ka stock kitna hai?',
+                  label: t('assistant', 'lowStockCheckLabel', 'Low Stock Check'),
+                  text:
+                    uiLanguage === 'pa-IN'
+                      ? 'ਚੌਲਾਂ ਦਾ ਸਟਾਕ ਕਿੰਨਾ ਹੈ?'
+                      : uiLanguage === 'hi-IN'
+                      ? 'चावल का स्टॉक कितना है?'
+                      : 'Which products are running low in stock?',
                 },
                 {
-                  label: 'Payment Settlement',
-                  text: 'Ramesh ne 600 rupaye cash diye',
+                  label: t('assistant', 'paymentSettlementLabel', 'Payment Settlement'),
+                  text:
+                    uiLanguage === 'pa-IN'
+                      ? 'ਰਮੇਸ਼ ਨੇ 600 ਰੁਪਏ ਨਕਦ ਦਿੱਤੇ'
+                      : uiLanguage === 'hi-IN'
+                      ? 'रमेश ने 600 रुपये नकद दिए'
+                      : 'Ramesh paid 600 rupees cash',
                 },
               ].map((p, idx) => (
                 <button
@@ -485,17 +510,17 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                       <div className="mb-2 pb-2 border-b border-sand/50 text-[11px] text-earth-600 space-y-1">
                         <div className="flex items-center gap-1.5 text-rangoli-800 font-semibold">
                           <Check className="w-3.5 h-3.5 text-success" />
-                          <span>Checking business inventory & sales ledger</span>
+                          <span>{t('assistant', 'checkingInventory', 'Checking business inventory & sales ledger')}</span>
                         </div>
                         <div className="flex flex-wrap gap-1.5 mt-1">
                           <span className="px-2 py-0.5 rounded-full bg-sand/60 text-earth-800 text-[10px]">
-                            Inventory ✓
+                            {t('inventory', 'title', 'Inventory')} ✓
                           </span>
                           <span className="px-2 py-0.5 rounded-full bg-sand/60 text-earth-800 text-[10px]">
-                            Sales history ✓
+                            {t('sales', 'title', 'Sales')} ✓
                           </span>
                           <span className="px-2 py-0.5 rounded-full bg-sand/60 text-earth-800 text-[10px]">
-                            Reorder thresholds ✓
+                            {t('assistant', 'reorderChecked', 'Reorder limits evaluated ✓')}
                           </span>
                         </div>
                       </div>
@@ -512,7 +537,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                           }
                           className="flex items-center justify-between w-full text-earth-600 hover:text-earth-900 font-serif font-bold text-[11px]"
                         >
-                          <span>Three-Language Representation Trio</span>
+                          <span>{t('assistant', 'trioTitle', 'Three-Language Representation Trio')}</span>
                           {expandedTrioId === msg.id ? (
                             <ChevronUp className="w-3.5 h-3.5" />
                           ) : (
@@ -524,7 +549,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                           <div className="mt-2 space-y-2 p-2.5 rounded-xl bg-ivory-50/80 border border-sand text-[11px]">
                             <div>
                               <span className="font-bold text-rangoli-800 block">
-                                1. Original Input (Detected: Hindi — 96%):
+                                1. {t('assistant', 'originalInput', 'Original Input')} (Detected: {localeCfg.englishName} — 96%):
                               </span>
                               <span className="text-earth-700 italic">
                                 &ldquo;{msg.langMeta.original_transcript}&rdquo;
@@ -532,13 +557,13 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                             </div>
                             <div>
                               <span className="font-bold text-rangoli-800 block">
-                                2. Selected Application Language ({localeCfg.nativeName}):
+                                2. {t('assistant', 'selectedLanguage', 'Selected Application Language')} ({localeCfg.nativeName}):
                               </span>
                               <span className="text-earth-800">{msg.langMeta.translated_text}</span>
                             </div>
                             <div>
                               <span className="font-bold text-rangoli-800 block">
-                                3. English Normalized:
+                                3. {t('assistant', 'englishVersion', 'English Normalized')}:
                               </span>
                               <span className="text-earth-800">{msg.langMeta.english_representation}</span>
                             </div>
@@ -557,16 +582,16 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                 <div className="flex items-center justify-between pb-2 border-b border-sand">
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 rounded-full bg-rangoli-100 text-rangoli-800 font-bold text-[10px] uppercase tracking-wider">
-                      Transaction Detected
+                      {t('assistant', 'transactionDetected', 'Transaction Detected')}
                     </span>
-                    <span className="text-earth-500 text-[11px]">Hindi • 96%</span>
+                    <span className="text-earth-500 text-[11px]">{localeCfg.nativeName} • 96%</span>
                   </div>
                   <button
                     onClick={() => setIsEditingTransaction(!isEditingTransaction)}
                     className="flex items-center gap-1 text-rangoli-700 font-bold hover:underline"
                   >
                     <Edit3 className="w-3 h-3" />
-                    <span>{isEditingTransaction ? 'Preview' : 'Edit Fields'}</span>
+                    <span>{isEditingTransaction ? t('common', 'view', 'Preview') : t('assistant', 'editFields', 'Edit Fields')}</span>
                   </button>
                 </div>
 
@@ -574,33 +599,33 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                   <div className="my-3 space-y-2">
                     <div className="grid grid-cols-2 gap-2 text-earth-700">
                       <div>
-                        <span className="text-earth-500 block text-[10px]">Customer:</span>
+                        <span className="text-earth-500 block text-[10px]">{t('assistant', 'customer', 'Customer')}:</span>
                         <span className="font-bold text-earth-900 text-sm">
                           {editFormData.customerName}
                         </span>
                       </div>
                       <div>
-                        <span className="text-earth-500 block text-[10px]">Product:</span>
+                        <span className="text-earth-500 block text-[10px]">{t('assistant', 'product', 'Product')}:</span>
                         <span className="font-bold text-earth-900 text-sm">
                           {editFormData.productName}
                         </span>
                       </div>
                       <div>
-                        <span className="text-earth-500 block text-[10px]">Quantity:</span>
+                        <span className="text-earth-500 block text-[10px]">{t('assistant', 'quantity', 'Quantity')}:</span>
                         <span className="font-semibold">
                           {editFormData.quantity} {editFormData.unit}
                         </span>
                       </div>
                       <div>
-                        <span className="text-earth-500 block text-[10px]">Payment:</span>
+                        <span className="text-earth-500 block text-[10px]">{t('assistant', 'payment', 'Payment Mode')}:</span>
                         <span className="font-semibold text-warning">
-                          {editFormData.paymentStatus === 'credit' ? 'Credit (Udhar)' : 'Paid'}
+                          {editFormData.paymentStatus === 'credit' ? t('sales', 'credit', 'Credit (Udhar)') : t('sales', 'cash', 'Paid')}
                         </span>
                       </div>
                     </div>
 
                     <div className="pt-2 border-t border-sand/60 flex items-baseline justify-between">
-                      <span className="text-earth-600 font-semibold">Total Amount:</span>
+                      <span className="text-earth-600 font-semibold">{t('assistant', 'amount', 'Total Amount')}:</span>
                       <span className="text-xl font-bold text-earth-900 font-serif">
                         ₹{editFormData.amount}
                       </span>
@@ -609,7 +634,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                 ) : (
                   <div className="my-3 grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <label className="block text-earth-600 font-semibold mb-1">Customer</label>
+                      <label className="block text-earth-600 font-semibold mb-1">{t('assistant', 'customer', 'Customer')}</label>
                       <input
                         type="text"
                         value={editFormData.customerName}
@@ -620,7 +645,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-earth-600 font-semibold mb-1">Product</label>
+                      <label className="block text-earth-600 font-semibold mb-1">{t('assistant', 'product', 'Product')}</label>
                       <input
                         type="text"
                         value={editFormData.productName}
@@ -631,7 +656,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-earth-600 font-semibold mb-1">Amount (₹)</label>
+                      <label className="block text-earth-600 font-semibold mb-1">{t('assistant', 'amount', 'Amount (₹)')}</label>
                       <input
                         type="number"
                         value={editFormData.amount}
@@ -642,7 +667,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-earth-600 font-semibold mb-1">Payment</label>
+                      <label className="block text-earth-600 font-semibold mb-1">{t('assistant', 'payment', 'Payment Mode')}</label>
                       <select
                         value={editFormData.paymentStatus}
                         onChange={(e) =>
@@ -653,9 +678,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                         }
                         className="w-full p-2 border border-sand rounded-lg text-earth-900"
                       >
-                        <option value="credit">Credit (Udhar)</option>
-                        <option value="cash">Cash (Paid)</option>
-                        <option value="upi">UPI</option>
+                        <option value="credit">{t('sales', 'credit', 'Credit (Udhar)')}</option>
+                        <option value="cash">{t('sales', 'cash', 'Cash (Paid)')}</option>
+                        <option value="upi">{t('sales', 'upi', 'UPI')}</option>
                       </select>
                     </div>
                   </div>
@@ -666,14 +691,14 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                     onClick={handleCancelTransaction}
                     className="px-3 py-1.5 rounded-lg border border-sand text-earth-700 hover:bg-sand/30 font-semibold"
                   >
-                    Cancel
+                    {t('common', 'cancel', 'Cancel')}
                   </button>
                   <button
                     onClick={handleConfirmTransaction}
                     className="px-4 py-1.5 rounded-lg bg-rangoli-500 hover:bg-rangoli-600 text-white font-bold flex items-center gap-1.5 shadow-sm"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Confirm Transaction</span>
+                    <span>{t('assistant', 'confirmTransaction', 'Confirm Transaction')}</span>
                   </button>
                 </div>
               </div>
@@ -690,11 +715,11 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                 <div>
                   <div className="font-bold text-earth-900 text-xs">
                     {isListening
-                      ? 'Listening in Hindi / Punjabi / English...'
-                      : 'Understanding & Normalizing Intent...'}
+                      ? t('assistant', 'listening', 'Listening to your voice...')
+                      : t('assistant', 'understanding', 'Understanding business intent...')}
                   </div>
                   <div className="text-[11px] text-earth-600 italic">
-                    {interimTranscript || 'Speak your sale or business question...'}
+                    {interimTranscript || t('assistant', 'tapToSpeak', 'Speak your sale or business question...')}
                   </div>
                 </div>
               </div>
@@ -703,7 +728,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                   onClick={stopListening}
                   className="px-3 py-1 rounded-lg bg-danger text-white text-xs font-bold"
                 >
-                  Stop
+                  {t('common', 'close', 'Stop')}
                 </button>
               )}
             </div>
@@ -741,7 +766,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleProcessQuery(inputQuery, 'text');
                 }}
-                placeholder="Type or speak: 'Ramesh ko 5 kg rice 600 rupaye mein udhar diya'..."
+                placeholder={t('assistant', 'typeInstead', "Type or speak: 'Ramesh ko 5 kg rice 600 rupaye mein udhar diya'...")}
                 className="w-full bg-transparent text-xs sm:text-sm text-earth-900 focus:outline-none placeholder:text-earth-400"
               />
               <button
@@ -759,23 +784,23 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
         <div className="hidden lg:flex lg:col-span-3 flex-col bg-surface border border-sand rounded-2xl p-4 shadow-sm h-[740px] space-y-4">
           <div className="pb-3 border-b border-sand">
             <h3 className="font-serif font-bold text-earth-900 text-sm">
-              {t('assistant', 'contextPanelTitle') || 'Live Store Context'}
+              {t('assistant', 'contextPanelTitle', 'Live Store Context')}
             </h3>
             <p className="text-[11px] text-earth-500">
-              {t('assistant', 'contextPanelSub') || 'Tied to active business database'}
+              {t('assistant', 'contextPanelSub', 'Tied to active business database')}
             </p>
           </div>
 
           {/* Metric 1: Total Receivables */}
           <div className="p-3 rounded-xl bg-ivory-50/80 border border-sand">
             <span className="text-[10px] font-bold text-earth-500 uppercase">
-              Total Outstanding Udhar
+              {t('receivables', 'totalOutstanding', 'Total Outstanding Udhar')}
             </span>
             <div className="text-xl font-bold font-serif text-earth-900 mt-0.5">
               ₹{totalReceivables.toLocaleString('en-IN')}
             </div>
             <div className="text-[11px] text-warning font-medium mt-1">
-              Overdue: {overdueCustomersCount} customers
+              {t('receivables', 'overdue', 'Overdue')}: {overdueCustomersCount}
             </div>
           </div>
 
@@ -783,7 +808,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
           {largestDebtor && (
             <div className="p-3 rounded-xl bg-ivory-50/80 border border-sand">
               <span className="text-[10px] font-bold text-earth-500 uppercase">
-                Largest Outstanding
+                {t('receivables', 'overdueAmount', 'Largest Outstanding')}
               </span>
               <div className="text-sm font-bold text-earth-900 mt-0.5">{largestDebtor.name}</div>
               <div className="text-sm font-semibold text-danger">
@@ -794,7 +819,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
 
           {/* Metric 3: Today's Sales */}
           <div className="p-3 rounded-xl bg-ivory-50/80 border border-sand">
-            <span className="text-[10px] font-bold text-earth-500 uppercase">Today&apos;s Sales</span>
+            <span className="text-[10px] font-bold text-earth-500 uppercase">{t('dashboard', 'todaySales', "Today's Sales")}</span>
             <div className="text-xl font-bold font-serif text-success mt-0.5">
               ₹{todaySalesTotal.toLocaleString('en-IN')}
             </div>
@@ -802,12 +827,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
 
           {/* Metric 4: Low Stock Alert */}
           <div className="p-3 rounded-xl bg-ivory-50/80 border border-sand">
-            <span className="text-[10px] font-bold text-earth-500 uppercase">Stock Health</span>
+            <span className="text-[10px] font-bold text-earth-500 uppercase">{t('inventory', 'title', 'Stock Health')}</span>
             <div className="text-sm font-bold text-earth-900 mt-0.5">
-              {products.length} Products Tracked
+              {products.length} {t('inventory', 'totalItems', 'Products Tracked')}
             </div>
             <div className="text-[11px] text-warning mt-0.5">
-              {lowStockCount} items below reorder threshold
+              {lowStockCount} {t('inventory', 'lowStock', 'items below reorder')}
             </div>
           </div>
 
@@ -818,7 +843,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
               className="w-full py-2 px-3 rounded-xl border border-sand bg-surface hover:bg-rangoli-50 text-xs text-earth-800 font-semibold flex items-center justify-center gap-1.5 transition-colors"
             >
               <Key className="w-3.5 h-3.5 text-rangoli-600" />
-              <span>{geminiApiKey ? 'Gemini API Configured' : 'Connect Gemini Key'}</span>
+              <span>{geminiApiKey ? t('assistant', 'geminiConfigured', 'Gemini API Configured') : t('assistant', 'connectGemini', 'Connect Gemini Key')}</span>
             </button>
           </div>
         </div>
@@ -830,7 +855,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
           <div className="bg-surface rounded-2xl border border-rangoli-300 shadow-2xl max-w-md w-full p-6 text-xs">
             <div className="flex items-center justify-between border-b border-sand pb-3 mb-3">
               <h3 className="font-serif font-bold text-earth-900 text-sm">
-                Google Gemini API Key
+                {t('assistant', 'geminiModalTitle', 'Google Gemini API Key')}
               </h3>
               <button
                 onClick={() => setShowApiKeyModal(false)}
@@ -840,7 +865,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
               </button>
             </div>
             <p className="text-earth-600 mb-3">
-              KINETIC functions fully with its local NLP engine. Adding a Gemini API key routes complex reasoning to Gemini 1.5 Flash.
+              {t('assistant', 'geminiModalDesc', 'KINETIC functions fully with its local NLP engine. Adding a Gemini API key routes complex reasoning to Gemini 1.5 Flash.')}
             </p>
             <input
               type="password"
@@ -854,7 +879,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                 onClick={() => setShowApiKeyModal(false)}
                 className="px-3 py-1.5 rounded-lg border border-sand text-earth-700"
               >
-                Cancel
+                {t('common', 'cancel', 'Cancel')}
               </button>
               <button
                 onClick={() => {
@@ -864,7 +889,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigateTo }) => {
                 }}
                 className="px-4 py-1.5 rounded-lg bg-rangoli-500 text-white font-bold"
               >
-                Save
+                {t('common', 'save', 'Save')}
               </button>
             </div>
           </div>

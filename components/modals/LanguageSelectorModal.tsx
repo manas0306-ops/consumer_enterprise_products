@@ -5,6 +5,8 @@ import { Search, Check, Globe, Sparkles, X } from 'lucide-react';
 import { LAUNCH_LANGUAGES, LocaleConfig } from '@/lib/i18n/locales.config';
 import { RangoliCore, RangoliLoader } from '@/components/rangoli/RangoliMotif';
 
+import { useBusiness } from '@/context/BusinessContext';
+
 interface LanguageSelectorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,6 +20,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
   currentLocale,
   onSelectLocale,
 }) => {
+  const { t } = useBusiness();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSwitching, setIsSwitching] = useState(false);
   const [targetLocale, setTargetLocale] = useState<LocaleConfig | null>(null);
@@ -76,7 +79,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
             </div>
             <div>
               <h2 id="lang-modal-title" className="text-lg sm:text-xl font-bold text-earth-900 font-serif">
-                Choose your KINETIC language
+                {t('modals', 'chooseLanguage', 'Choose your KINETIC language')}
               </h2>
               <p className="text-xs sm:text-sm text-earth-600">
                 &ldquo;Your language should shape your entire experience.&rdquo;
@@ -100,7 +103,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by native name, English, or script (e.g., ਪੰਜਾਬੀ, Tamil, Arabic)..."
+              placeholder={t('modals', 'searchLangPlaceholder', 'Search by native name, English, or script (e.g., ਪੰਜਾਬੀ, Tamil, Arabic)...')}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-sand bg-ivory-50/80 text-earth-900 text-sm focus:outline-none focus:ring-2 focus:ring-rangoli-400 focus:border-transparent transition-all"
             />
           </div>
@@ -114,7 +117,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-base">🌍</span>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-earth-700 font-serif">
-                  International Languages ({internationalList.length})
+                  {t('modals', 'internationalLanguages', 'International Languages')} ({internationalList.length})
                 </h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
@@ -205,7 +208,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-base">🇮🇳</span>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-earth-700 font-serif">
-                  Indian Scheduled & Regional Languages ({indianList.length})
+                  {t('modals', 'indianLanguages', 'Indian Scheduled & Regional Languages')} ({indianList.length})
                 </h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
@@ -301,7 +304,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
             onClick={onClose}
             className="px-4 py-1.5 rounded-lg border border-sand bg-surface font-medium hover:bg-rangoli-50 transition-colors"
           >
-            Close
+            {t('common', 'close', 'Close')}
           </button>
         </div>
       </div>

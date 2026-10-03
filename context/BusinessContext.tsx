@@ -45,7 +45,7 @@ interface BusinessContextType {
   responseLanguages: string[];
   setResponseLanguages: (langs: string[]) => void;
   // Internationalization helper
-  t: (namespace: TranslationNamespace, key: string) => string;
+  t: (namespace: TranslationNamespace, key: string, fallback?: string) => string;
   // Calendar System (PRD §6.10)
   calendarSystem: CalendarSystem;
   setCalendarSystem: (system: CalendarSystem) => void;
@@ -143,8 +143,8 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setResponseLanguages([locale, 'en-US']);
   };
 
-  const t = (namespace: TranslationNamespace, key: string): string => {
-    return translate(uiLanguage, namespace, key).text;
+  const t = (namespace: TranslationNamespace, key: string, fallback?: string): string => {
+    return translate(uiLanguage, namespace, key, fallback).text;
   };
 
   // Load from LocalStorage on mount

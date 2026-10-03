@@ -40,6 +40,7 @@ export const SettingsManager: React.FC = () => {
     setShowRangoli,
     responseLanguages,
     setResponseLanguages,
+    t,
   } = useBusiness();
 
   const localeCfg = getLocaleConfig(uiLanguage);
@@ -75,10 +76,10 @@ export const SettingsManager: React.FC = () => {
       {/* Header */}
       <div className="bg-surface p-5 rounded-2xl border border-sand shadow-sm">
         <h2 className="text-xl font-bold text-earth-900 font-serif">
-          Settings, Language & Architecture Controls
+          {t('settings', 'title', 'Settings, Language & Architecture Controls')}
         </h2>
         <p className="text-xs text-earth-600">
-          Configure 38-language localization, speech pipeline, calendar conventions, and verify Rangoli design system
+          {t('settings', 'subtitle', 'Configure 38-language localization, speech pipeline, calendar conventions, and verify Rangoli design system')}
         </p>
       </div>
 
@@ -91,15 +92,15 @@ export const SettingsManager: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base font-bold text-earth-900 font-serif">
-                Multilingual Architecture & Language States
+                {t('settings', 'multiArch', 'Multilingual Architecture & Language States')}
               </h3>
               <p className="text-xs text-earth-500">
-                Language is an architectural pillar, not a translation layer (PRD Core Thesis)
+                {t('settings', 'multiArchSub', 'Language is an architectural pillar, not a translation layer')}
               </p>
             </div>
           </div>
           <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-rangoli-100 text-rangoli-800">
-            38 Languages Supported
+            {t('settings', 'languagesSupported', '38 Languages Supported')}
           </span>
         </div>
 
@@ -107,10 +108,10 @@ export const SettingsManager: React.FC = () => {
           {/* 1. Application Language */}
           <div className="p-4 rounded-xl border border-sand bg-ivory-50/60 space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-earth-700 font-serif">
-              Application Interface Language (ui_language)
+              {t('settings', 'appLanguage', 'Application Interface Language (ui_language)')}
             </label>
             <p className="text-xs text-earth-600">
-              Switches entire UI, navigation, forms, error messages, and AI responses.
+              {t('settings', 'appLanguageSub', 'Switches entire UI, navigation, forms, error messages, and AI responses.')}
             </p>
             <div className="flex items-center justify-between pt-2">
               <div className="flex items-center gap-2">
@@ -124,7 +125,7 @@ export const SettingsManager: React.FC = () => {
                 onClick={() => setIsLanguageModalOpen(true)}
                 className="px-3 py-1.5 rounded-lg bg-rangoli-500 hover:bg-rangoli-600 text-white text-xs font-bold transition-all"
               >
-                Change Language
+                {t('settings', 'changeLanguage', 'Change Language')}
               </button>
             </div>
           </div>
@@ -132,10 +133,10 @@ export const SettingsManager: React.FC = () => {
           {/* 2. Voice Detection Mode */}
           <div className="p-4 rounded-xl border border-sand bg-ivory-50/60 space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-earth-700 font-serif">
-              Voice Detection Mode (PRD §6.2)
+              {t('settings', 'voiceDetectionMode', 'Voice Detection Mode (PRD §6.2)')}
             </label>
             <p className="text-xs text-earth-600">
-              Auto-detect microphone language or lock to user preferred language.
+              {t('settings', 'voiceDetectionSub', 'Auto-detect microphone language or lock to user preferred language.')}
             </p>
             <div className="flex items-center gap-3 pt-2">
               <button
@@ -147,7 +148,7 @@ export const SettingsManager: React.FC = () => {
                     : 'bg-surface text-earth-700 border-sand'
                 }`}
               >
-                AUTO (Detect Language)
+                {t('settings', 'autoDetect', 'AUTO (Detect Language)')}
               </button>
               <button
                 type="button"
@@ -158,7 +159,7 @@ export const SettingsManager: React.FC = () => {
                     : 'bg-surface text-earth-700 border-sand'
                 }`}
               >
-                MANUAL ({localeCfg.nativeName})
+                {t('settings', 'manualSelect', 'MANUAL')} ({localeCfg.nativeName})
               </button>
             </div>
           </div>
@@ -166,10 +167,10 @@ export const SettingsManager: React.FC = () => {
           {/* 3. Response Languages (PRD §5) */}
           <div className="p-4 rounded-xl border border-sand bg-ivory-50/60 space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-earth-700 font-serif">
-              Response Languages (response_languages)
+              {t('settings', 'responseLanguages', 'Response Languages (response_languages)')}
             </label>
             <p className="text-xs text-earth-600">
-              Delivers answers in selected app language plus English by default.
+              {t('settings', 'responseLanguagesSub', 'Delivers answers in selected app language plus English by default.')}
             </p>
             <div className="flex items-center gap-4 pt-1 text-xs">
               <label className="flex items-center gap-2 cursor-pointer font-semibold text-earth-800">
@@ -179,7 +180,7 @@ export const SettingsManager: React.FC = () => {
                   disabled
                   className="rounded text-rangoli-500 focus:ring-0"
                 />
-                Selected Language ({localeCfg.nativeName})
+                {t('settings', 'selectedLanguage', 'Selected Language')} ({localeCfg.nativeName})
               </label>
               <label className="flex items-center gap-2 cursor-pointer font-semibold text-earth-800">
                 <input
@@ -194,7 +195,7 @@ export const SettingsManager: React.FC = () => {
                   }}
                   className="rounded text-rangoli-500 focus:ring-0"
                 />
-                English Translation
+                {t('settings', 'englishTranslation', 'English Translation')}
               </label>
             </div>
           </div>
@@ -202,10 +203,10 @@ export const SettingsManager: React.FC = () => {
           {/* 4. Calendar System Conventions (PRD §6.10) */}
           <div className="p-4 rounded-xl border border-sand bg-ivory-50/60 space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-earth-700 font-serif">
-              Calendar Convention (PRD §6.10)
+              {t('settings', 'calendarSystem', 'Calendar Convention (PRD §6.10)')}
             </label>
             <p className="text-xs text-earth-600">
-              Format dates, ledgers, and repayment due dates with local calendar convention.
+              {t('settings', 'calendarSub', 'Format dates, ledgers, and repayment due dates with local calendar convention.')}
             </p>
             <div className="flex flex-wrap gap-2 pt-1 text-xs">
               {(['gregorian', 'indian', 'islamic'] as CalendarSystem[]).map((cal) => (
@@ -219,7 +220,11 @@ export const SettingsManager: React.FC = () => {
                       : 'bg-surface text-earth-700 border-sand hover:bg-rangoli-50'
                   }`}
                 >
-                  {cal === 'indian' ? 'Indian (Saka/Vikram)' : cal}
+                  {cal === 'indian'
+                    ? t('settings', 'indianNational', 'Indian (Saka/Vikram)')
+                    : cal === 'gregorian'
+                    ? t('settings', 'gregorian', 'Gregorian')
+                    : t('settings', 'islamicHijri', 'Islamic')}
                 </button>
               ))}
             </div>
@@ -231,8 +236,8 @@ export const SettingsManager: React.FC = () => {
           {/* TTS Voice Output */}
           <div className="flex items-center justify-between p-3 rounded-xl border border-sand bg-surface">
             <div>
-              <span className="font-bold text-earth-900 block">Voice Output (TTS)</span>
-              <span className="text-earth-500 text-[11px]">Speak AI answers aloud</span>
+              <span className="font-bold text-earth-900 block">{t('settings', 'voiceOutputTTS', 'Voice Output (TTS)')}</span>
+              <span className="text-earth-500 text-[11px]">{t('settings', 'speakAnswers', 'Speak AI answers aloud')}</span>
             </div>
             <button
               onClick={() => setVoiceOutputEnabled(!voiceOutputEnabled)}
@@ -249,8 +254,8 @@ export const SettingsManager: React.FC = () => {
           {/* Show Original Transcript */}
           <div className="flex items-center justify-between p-3 rounded-xl border border-sand bg-surface">
             <div>
-              <span className="font-bold text-earth-900 block">Show Audio Transcript</span>
-              <span className="text-earth-500 text-[11px]">Display spoken raw input</span>
+              <span className="font-bold text-earth-900 block">{t('settings', 'showTranscript', 'Show Audio Transcript')}</span>
+              <span className="text-earth-500 text-[11px]">{t('settings', 'displayRawSpoken', 'Display spoken raw input')}</span>
             </div>
             <input
               type="checkbox"
@@ -263,8 +268,8 @@ export const SettingsManager: React.FC = () => {
           {/* Design System §2: The Rangoli Removal Test */}
           <div className="flex items-center justify-between p-3 rounded-xl border border-sand bg-surface">
             <div>
-              <span className="font-bold text-earth-900 block">Rangoli Removal Test</span>
-              <span className="text-earth-500 text-[11px]">Toggle canvas watermark</span>
+              <span className="font-bold text-earth-900 block">{t('settings', 'rangoliTest', 'Rangoli Removal Test')}</span>
+              <span className="text-earth-500 text-[11px]">{t('settings', 'toggleWatermark', 'Toggle canvas watermark')}</span>
             </div>
             <button
               onClick={() => setShowRangoli(!showRangoli)}
@@ -274,7 +279,7 @@ export const SettingsManager: React.FC = () => {
                   : 'bg-earth-200 text-earth-700'
               }`}
             >
-              {showRangoli ? 'Mandala Active' : 'Pure Minimalist UI'}
+              {showRangoli ? t('settings', 'mandalaActive', 'Mandala Active') : t('settings', 'pureMinimalist', 'Pure Minimalist UI')}
             </button>
           </div>
         </div>
@@ -289,51 +294,51 @@ export const SettingsManager: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base font-bold text-earth-900 font-serif">
-                Hybrid AI Cost & Computational Routing Telemetry
+                {t('settings', 'hybridTelemetry', 'Hybrid AI Cost & Computational Routing Telemetry')}
               </h3>
               <p className="text-xs text-earth-500">
-                Optimized for poor connectivity, low-latency mobile devices, and zero cloud API cost
+                {t('settings', 'hybridSub', 'Optimized for poor connectivity, low-latency mobile devices, and zero cloud API cost')}
               </p>
             </div>
           </div>
 
           <span className="text-xs font-bold px-3 py-1 rounded-full bg-success/10 text-success border border-success/30">
-            Hybrid-Ready Architecture
+            {t('settings', 'hybridReady', 'Hybrid-Ready Architecture')}
           </span>
         </div>
 
         {/* Telemetry Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-surface p-3.5 rounded-xl border border-sand text-xs">
-            <span className="text-earth-500 block text-[11px]">Tasks Processed Locally</span>
+            <span className="text-earth-500 block text-[11px]">{t('settings', 'tasksLocal', 'Tasks Processed Locally')}</span>
             <div className="text-xl font-bold text-success font-serif mt-1">
               {telemetry.localLightweightRequests} ({localRatio}%)
             </div>
-            <span className="text-[10px] text-earth-400">Zero cloud latency</span>
+            <span className="text-[10px] text-earth-400">{t('settings', 'zeroLatency', 'Zero cloud latency')}</span>
           </div>
 
           <div className="bg-surface p-3.5 rounded-xl border border-sand text-xs">
-            <span className="text-earth-500 block text-[11px]">Cloud AI Fallback</span>
+            <span className="text-earth-500 block text-[11px]">{t('settings', 'cloudFallback', 'Cloud AI Fallback')}</span>
             <div className="text-xl font-bold text-earth-900 font-serif mt-1">
               {telemetry.cloudLLMRequests} ({100 - localRatio}%)
             </div>
-            <span className="text-[10px] text-earth-400">Gemini 1.5 Flash</span>
+            <span className="text-[10px] text-earth-400">{t('settings', 'geminiModel', 'Gemini 1.5 Flash')}</span>
           </div>
 
           <div className="bg-surface p-3.5 rounded-xl border border-sand text-xs">
-            <span className="text-earth-500 block text-[11px]">Average NLP Latency</span>
+            <span className="text-earth-500 block text-[11px]">{t('settings', 'avgLatency', 'Average NLP Latency')}</span>
             <div className="text-xl font-bold text-rangoli-700 font-serif mt-1">
               {telemetry.avgLatencyMs} ms
             </div>
-            <span className="text-[10px] text-earth-400">Sub-50ms target met</span>
+            <span className="text-[10px] text-earth-400">{t('settings', 'sub50ms', 'Sub-50ms target met')}</span>
           </div>
 
           <div className="bg-surface p-3.5 rounded-xl border border-sand text-xs">
-            <span className="text-earth-500 block text-[11px]">Estimated API Cost Saved</span>
+            <span className="text-earth-500 block text-[11px]">{t('settings', 'costSaved', 'Estimated API Cost Saved')}</span>
             <div className="text-xl font-bold text-earth-900 font-serif mt-1">
               ₹{telemetry.costSavedINR.toFixed(2)}
             </div>
-            <span className="text-[10px] text-earth-400">Zero-cost MSME ops</span>
+            <span className="text-[10px] text-earth-400">{t('settings', 'zeroCostOps', 'Zero-cost MSME ops')}</span>
           </div>
         </div>
       </div>
@@ -341,12 +346,12 @@ export const SettingsManager: React.FC = () => {
       {/* SECTION 3: BUSINESS PROFILE FORM */}
       <div className="bg-surface p-6 rounded-2xl border border-sand shadow-sm space-y-4">
         <h3 className="text-base font-bold text-earth-900 font-serif">
-          Store & Proprietor Details
+          {t('settings', 'storeProfile', 'Store & Proprietor Details')}
         </h3>
         <form onSubmit={handleSaveBusiness} className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-earth-700 font-semibold mb-1">Business Name</label>
+              <label className="block text-earth-700 font-semibold mb-1">{t('settings', 'storeName', 'Business Name')}</label>
               <input
                 type="text"
                 value={businessForm.name}
@@ -356,7 +361,7 @@ export const SettingsManager: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-earth-700 font-semibold mb-1">Owner Name</label>
+              <label className="block text-earth-700 font-semibold mb-1">{t('settings', 'ownerName', 'Owner Name')}</label>
               <input
                 type="text"
                 value={businessForm.ownerName}
@@ -366,7 +371,7 @@ export const SettingsManager: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-earth-700 font-semibold mb-1">Phone Number</label>
+              <label className="block text-earth-700 font-semibold mb-1">{t('settings', 'phone', 'Phone Number')}</label>
               <input
                 type="text"
                 value={businessForm.phone}
@@ -376,7 +381,7 @@ export const SettingsManager: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-earth-700 font-semibold mb-1">GSTIN (Optional)</label>
+              <label className="block text-earth-700 font-semibold mb-1">{t('settings', 'gstinOptional', 'GSTIN (Optional)')}</label>
               <input
                 type="text"
                 value={businessForm.gstin}
@@ -387,7 +392,7 @@ export const SettingsManager: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-earth-700 font-semibold mb-1">Shop Address & Landmark</label>
+            <label className="block text-earth-700 font-semibold mb-1">{t('settings', 'address', 'Shop Address & Landmark')}</label>
             <input
               type="text"
               value={businessForm.address}
@@ -399,7 +404,7 @@ export const SettingsManager: React.FC = () => {
           <div className="flex items-center justify-between pt-2">
             {savedNotification ? (
               <span className="text-xs text-success font-bold flex items-center gap-1">
-                <CheckCircle className="w-4 h-4" /> Profile saved successfully!
+                <CheckCircle className="w-4 h-4" /> {t('settings', 'saved', 'Profile saved successfully!')}
               </span>
             ) : <span />}
 
@@ -407,7 +412,7 @@ export const SettingsManager: React.FC = () => {
               type="submit"
               className="px-5 py-2 rounded-xl bg-rangoli-500 hover:bg-rangoli-600 text-white font-bold shadow-sm"
             >
-              Save Business Details
+              {t('settings', 'saveChanges', 'Save Business Details')}
             </button>
           </div>
         </form>
@@ -416,10 +421,10 @@ export const SettingsManager: React.FC = () => {
       {/* SECTION 4: DEMO CONTROLS */}
       <div className="bg-surface p-6 rounded-2xl border border-sand shadow-sm space-y-3">
         <h3 className="text-base font-bold text-earth-900 font-serif">
-          Hackathon Presentation & Demo Controls
+          {t('settings', 'demoControls', 'Hackathon Presentation & Demo Controls')}
         </h3>
         <p className="text-xs text-earth-600">
-          Reset realistic sample dataset for the IIIT-Delhi presentation or purge to blank slate.
+          {t('settings', 'demoControlsSub', 'Reset realistic sample dataset for the presentation or purge to blank slate.')}
         </p>
 
         <div className="flex flex-wrap gap-3 pt-2">
@@ -428,7 +433,7 @@ export const SettingsManager: React.FC = () => {
             className="px-4 py-2 rounded-xl bg-rangoli-100 hover:bg-rangoli-200 border border-rangoli-300 text-rangoli-900 text-xs font-bold flex items-center gap-2 transition-colors"
           >
             <Store className="w-4 h-4 text-rangoli-600" />
-            <span>Reset Demo Kirana Store Dataset</span>
+            <span>{t('settings', 'resetDemo', 'Reset Demo Kirana Store Dataset')}</span>
           </button>
 
           <button
@@ -436,7 +441,7 @@ export const SettingsManager: React.FC = () => {
             className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-danger text-xs font-bold flex items-center gap-2 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
-            <span>Purge to Blank State</span>
+            <span>{t('settings', 'purgeBlank', 'Purge to Blank State')}</span>
           </button>
         </div>
       </div>

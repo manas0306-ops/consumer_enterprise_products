@@ -80,7 +80,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const dateStr = d.toISOString().split('T')[0];
-    const dayLabel = d.toLocaleDateString('en-IN', { weekday: 'short' });
+    const dayLabel = d.toLocaleDateString(localeCfg.code, { weekday: 'short' });
 
     // Aggregate sales for that date
     const daySales = sales
@@ -112,13 +112,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const overdueCount = receivables.filter((r) => r.status === 'overdue').length;
 
   const paymentBreakdown = [
-    { name: 'Paid', value: paidCount || 1, color: '#1B7A43' },
-    { name: 'Pending', value: pendingCount || 2, color: '#C88A24' },
-    { name: 'Overdue', value: overdueCount || 1, color: '#DC2626' },
+    { name: t('common', 'paid', 'Paid'), value: paidCount || 1, color: '#1B7A43' },
+    { name: t('dashboard', 'pending', 'Pending'), value: pendingCount || 2, color: '#C88A24' },
+    { name: t('dashboard', 'overdue', 'Overdue'), value: overdueCount || 1, color: '#DC2626' },
   ];
 
   const recentTransactions = sales.slice(0, 5);
   const activeAlerts = alerts.filter((a) => !a.dismissed).slice(0, 3);
+
+  const getAlertMessage = (a: typeof alerts[0]) => {
+    if (!a) return '';
+    if (a.type === 'out_of_stock') {
+      return `${a.actionableEntity?.name || ''} ${t('alerts', 'outOfStockMsg', 'is completely OUT OF STOCK (0 units). Customers cannot purchase.')}`;
+    }
+    if (a.type === 'low_stock') {
+      return `${a.actionableEntity?.name || ''} ${t('alerts', 'lowStockMsg', 'has reached critical reorder threshold. Replenish immediately.')}`;
+    }
+    if (a.type === 'overdue_payment') {
+      return `${a.actionableEntity?.name || ''} ${t('alerts', 'overduePaymentMsg', 'has an overdue balance exceeding payment terms.')}`;
+    }
+    if (a.type === 'credit_threshold') {
+      return `${a.actionableEntity?.name || ''} ${t('alerts', 'creditLimitMsg', 'has exceeded the maximum allowable credit ceiling.')}`;
+    }
+    return a.message;
+  };
 
   return (
     <div className="relative space-y-6 pb-12">
@@ -130,7 +147,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase font-bold tracking-widest text-rangoli-700 bg-rangoli-100/80 px-2.5 py-0.5 rounded-full border border-rangoli-300">
-              Live Business Overview
+              {t('dashboard', 'liveOverview', 'Live Business Overview')}
             </span>
             <span className="text-xs text-earth-500">
               {formatDate(new Date(), localeCfg.code, calendarSystem)}
@@ -140,7 +157,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {greeting}, {business.ownerName}
           </h2>
           <p className="text-xs sm:text-sm text-earth-600">
-            {subline} • {products.length} products in stock • {customers.length} registered customers
+            {subline} • {products.length} {t('dashboard', 'productsInStock', 'products in stock')} • {customers.length} {t('dashboard', 'registeredCustomers', 'registered customers')}
           </p>
         </div>
 
@@ -151,7 +168,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rangoli-500 hover:bg-rangoli-600 text-white text-xs font-bold shadow-md hover:shadow-rangoli transition-all active:scale-95"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>+ Record Sale</span>
+            <span>{t('dashboard', 'quickSaleBtn', '+ Record Sale')}</span>
           </button>
 
           <button
@@ -159,7 +176,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface hover:bg-rangoli-50 border border-rangoli-300 text-earth-800 text-xs font-semibold shadow-xs transition-all active:scale-95"
           >
             <Wallet className="w-4 h-4 text-success" />
-            <span>Settle Udhar</span>
+            <span>{t('dashboard', 'settleUdharBtn', 'Settle Udhar')}</span>
           </button>
 
           <button
@@ -167,7 +184,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-earth-900 hover:bg-earth-800 text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
           >
             <Sparkles className="w-4 h-4 text-rangoli-400" />
-            <span>Voice / Ask AI</span>
+            <span>{t('dashboard', 'askAIBtn', 'Voice / Ask AI')}</span>
           </button>
         </div>
       </div>
@@ -177,7 +194,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Metric 1: Today's Sales */}
         <div className="bg-surface rounded-2xl p-4 border border-sand shadow-sm relative overflow-hidden group hover:border-rangoli-400 transition-all">
           <div className="flex items-center justify-between text-earth-500 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">{t('dashboard', 'todaySales') || "Today's Sales"}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">{t('dashboard', 'todaySales', "Today's Sales")}</span>
             <div className="w-8 h-8 rounded-lg bg-rangoli-100 text-rangoli-700 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
@@ -187,14 +204,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-[11px] text-success font-medium">
             <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>Calculated from live sales</span>
+            <span>{t('dashboard', 'calculatedLive', 'Calculated from live sales')}</span>
           </div>
         </div>
 
         {/* Metric 2: Total Receivables (Udhar) */}
         <div className="bg-surface rounded-2xl p-4 border border-sand shadow-sm relative overflow-hidden group hover:border-rangoli-400 transition-all">
           <div className="flex items-center justify-between text-earth-500 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">{t('dashboard', 'receivables') || 'Total Receivables'}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">{t('dashboard', 'receivables', 'Total Receivables')}</span>
             <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
               <IndianRupee className="w-4 h-4" />
             </div>
@@ -203,15 +220,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {formatCurrency(totalReceivables, 'INR', localeCfg.code)}
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-[11px] text-danger font-medium">
-            <span>{formatCurrency(overdueReceivablesTotal, 'INR', localeCfg.code)} Overdue</span>
-            <span className="text-earth-400">({pendingPaymentsCount} pending)</span>
+            <span>{formatCurrency(overdueReceivablesTotal, 'INR', localeCfg.code)} {t('dashboard', 'overdue', 'Overdue')}</span>
+            <span className="text-earth-400">({pendingPaymentsCount} {t('dashboard', 'pending', 'pending')})</span>
           </div>
         </div>
 
         {/* Metric 3: Current Inventory Value */}
         <div className="bg-surface rounded-2xl p-4 border border-sand shadow-sm relative overflow-hidden group hover:border-rangoli-400 transition-all">
           <div className="flex items-center justify-between text-earth-500 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">{t('dashboard', 'inventoryValue') || 'Inventory Value'}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">{t('dashboard', 'inventoryValue', 'Inventory Value')}</span>
             <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
               <Package className="w-4 h-4" />
             </div>
@@ -220,26 +237,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {formatCurrency(totalInventoryValue, 'INR', localeCfg.code)}
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-[11px] text-earth-600 font-medium">
-            <span>{products.length} Products Cataloged</span>
+            <span>{products.length} {t('dashboard', 'productsCataloged', 'Products Cataloged')}</span>
           </div>
         </div>
 
         {/* Metric 4: Low Stock Alert Count */}
         <div className="bg-surface rounded-2xl p-4 border border-sand shadow-sm relative overflow-hidden group hover:border-rangoli-400 transition-all">
           <div className="flex items-center justify-between text-earth-500 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">{t('dashboard', 'lowStockItems') || 'Low Stock Alerts'}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">{t('dashboard', 'lowStockItems', 'Low Stock Alerts')}</span>
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${lowStockCount > 0 ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success'}`}>
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
           <div className={`text-xl sm:text-2xl font-bold font-serif ${lowStockCount > 0 ? 'text-danger' : 'text-success'}`}>
-            {lowStockCount} Items
+            {lowStockCount} {t('dashboard', 'items', 'Items')}
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-[11px] text-earth-600 font-medium">
             {lowStockCount > 0 ? (
-              <span className="text-danger font-semibold">Below reorder threshold</span>
+              <span className="text-danger font-semibold">{t('dashboard', 'belowReorder', 'Below reorder threshold')}</span>
             ) : (
-              <span className="text-success font-semibold">All stocks healthy</span>
+              <span className="text-success font-semibold">{t('dashboard', 'allHealthy', 'All stocks healthy')}</span>
             )}
           </div>
         </div>
@@ -250,14 +267,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="bg-amber-50/80 border border-amber-300 rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-amber-900 shadow-xs">
           <div className="flex items-center gap-2.5 truncate">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="font-bold">Attention:</span>
-            <span className="truncate">{activeAlerts[0].message}</span>
+            <span className="font-bold">{t('dashboard', 'attention', 'Attention:')}</span>
+            <span className="truncate">{getAlertMessage(activeAlerts[0])}</span>
           </div>
           <button
             onClick={() => setActiveTab('alerts')}
             className="text-xs font-bold text-amber-800 hover:text-amber-950 underline shrink-0"
           >
-            View All ({alerts.length})
+            {t('dashboard', 'viewAll', 'View All')} ({alerts.length})
           </button>
         </div>
       )}
@@ -269,14 +286,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-earth-900 font-serif">
-                Sales Trend (Past 7 Days)
+                {t('dashboard', 'salesTrend', 'Sales Trend (Past 7 Days)')}
               </h3>
               <p className="text-xs text-earth-500">
-                Synchronized automatically with new sales transactions
+                {t('dashboard', 'salesTrendSub', 'Synchronized automatically with new sales transactions')}
               </p>
             </div>
             <span className="text-xs font-bold text-rangoli-700 px-2 py-0.5 rounded-full bg-rangoli-50 border border-rangoli-200">
-              Live Relational Data
+              {t('dashboard', 'liveData', 'Live Relational Data')}
             </span>
           </div>
 
@@ -297,7 +314,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   tickFormatter={(val) => `₹${val}`}
                 />
                 <Tooltip
-                  formatter={(val: number) => [`₹${val.toLocaleString('en-IN')}`, 'Sales Revenue']}
+                  formatter={(val: number) => [`₹${val.toLocaleString('en-IN')}`, t('common', 'recordSale', 'Sales Revenue')]}
                   contentStyle={{
                     backgroundColor: '#FAF6EE',
                     borderColor: '#C88A24',
@@ -323,10 +340,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="bg-white rounded-2xl p-5 border border-rangoli-200/90 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="text-base font-bold text-earth-900 font-serif">
-              Receivables Health
+              {t('dashboard', 'receivablesHealth', 'Receivables Health')}
             </h3>
             <p className="text-xs text-earth-500 mb-4">
-              Status distribution across customer bahi-khata
+              {t('dashboard', 'receivablesHealthSub', 'Status distribution across customer bahi-khata')}
             </p>
           </div>
 
@@ -347,7 +364,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(val: number, name: string) => [`${val} Invoices`, name]}
+                  formatter={(val: number, name: string) => [`${val}`, name]}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -362,19 +379,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="text-xs font-bold text-success">
                 {paymentBreakdown[0].value}
               </div>
-              <div className="text-[10px] text-earth-500">Paid</div>
+              <div className="text-[10px] text-earth-500">{t('common', 'paid', 'Paid')}</div>
             </div>
             <div>
               <div className="text-xs font-bold text-rangoli-600">
                 {paymentBreakdown[1].value}
               </div>
-              <div className="text-[10px] text-earth-500">Pending</div>
+              <div className="text-[10px] text-earth-500">{t('dashboard', 'pending', 'Pending')}</div>
             </div>
             <div>
               <div className="text-xs font-bold text-danger">
                 {paymentBreakdown[2].value}
               </div>
-              <div className="text-[10px] text-earth-500">Overdue</div>
+              <div className="text-[10px] text-earth-500">{t('dashboard', 'overdue', 'Overdue')}</div>
             </div>
           </div>
         </div>
@@ -388,14 +405,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-rangoli-600" />
               <h3 className="text-base font-bold text-earth-900 font-serif">
-                Recent Transactions
+                {t('dashboard', 'recentTransactions', 'Recent Transactions')}
               </h3>
             </div>
             <button
               onClick={() => setActiveTab('sales')}
               className="text-xs font-semibold text-rangoli-600 hover:text-rangoli-800 flex items-center gap-1"
             >
-              <span>View All</span>
+              <span>{t('dashboard', 'viewAll', 'View All')}</span>
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
@@ -418,7 +435,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                       }`}
                     >
-                      {sale.paymentStatus === 'credit' ? 'Udhar' : sale.paymentStatus}
+                      {sale.paymentStatus === 'credit' ? t('common', 'credit', 'Udhar') : t('common', 'paid', 'Cash')}
                     </span>
                   </div>
                   <div className="text-xs text-earth-500 mt-0.5">
@@ -438,10 +455,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <button
                     onClick={() => setSelectedInvoice(sale)}
                     className="p-1.5 rounded-lg border border-rangoli-200 bg-white hover:bg-rangoli-100/70 text-rangoli-700 text-xs font-semibold flex items-center gap-1 shadow-2xs transition-colors shrink-0"
-                    title="View & Print Bill / Invoice"
+                    title={t('invoices', 'printInvoice', 'View & Print Bill / Invoice')}
                   >
                     <FileText className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Bill</span>
+                    <span className="hidden sm:inline">{t('common', 'print', 'Bill')}</span>
                   </button>
                 </div>
               </div>
@@ -455,14 +472,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="flex items-center gap-2">
               <Package className="w-4 h-4 text-rangoli-600" />
               <h3 className="text-base font-bold text-earth-900 font-serif">
-                Inventory Stock Watch
+                {t('dashboard', 'topProducts', 'Inventory Stock Watch')}
               </h3>
             </div>
             <button
               onClick={() => setActiveTab('inventory')}
               className="text-xs font-semibold text-rangoli-600 hover:text-rangoli-800 flex items-center gap-1"
             >
-              <span>Manage Stock</span>
+              <span>{t('inventory', 'title', 'Manage Stock')}</span>
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
@@ -498,7 +515,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         {prod.quantity} {prod.unit}
                       </span>
                       <span className="text-[10px] text-earth-400 block">
-                        Reorder: {prod.reorderLevel} {prod.unit}
+                        {t('inventory', 'reorderLevel', 'Reorder')}: {prod.reorderLevel} {prod.unit}
                       </span>
                     </div>
                   </div>

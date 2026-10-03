@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Printer, X, FileText } from 'lucide-react';
 import { Sale, Business } from '@/types';
+import { useBusiness } from '@/context/BusinessContext';
 
 interface PrintableInvoiceModalProps {
   invoice: Sale | null;
@@ -16,6 +17,7 @@ export const PrintableInvoiceModal: React.FC<PrintableInvoiceModalProps> = ({
   business,
   onClose,
 }) => {
+  const { t, uiLanguage } = useBusiness();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -162,9 +164,15 @@ export const PrintableInvoiceModal: React.FC<PrintableInvoiceModalProps> = ({
           {/* Traditional Top Auspicious Header */}
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-rangoli-700 tracking-widest uppercase font-serif">
-              <span>卐</span>
-              <span>॥ श्री गणेशाय नमः • शुभ लाभ ॥</span>
-              <span>卐</span>
+              <span>{uiLanguage === 'pa-IN' ? 'ੴ' : '卐'}</span>
+              <span>
+                {uiLanguage === 'pa-IN'
+                  ? 'ਸਤਿਗੁਰ ਪ੍ਰਸਾਦਿ • ਸ਼ੁਭ ਲਾਭ'
+                  : uiLanguage === 'hi-IN'
+                  ? '॥ श्री गणेशाय नमः • शुभ लाभ ॥'
+                  : '॥ Shri Ganeshay Namah • Shubh Labh ॥'}
+              </span>
+              <span>{uiLanguage === 'pa-IN' ? 'ੴ' : '卐'}</span>
             </div>
             
             <h2 className="text-2xl sm:text-3xl font-bold font-serif text-earth-900 tracking-tight mt-1">
@@ -174,11 +182,11 @@ export const PrintableInvoiceModal: React.FC<PrintableInvoiceModalProps> = ({
               {business.address}
             </p>
             <div className="text-[11px] text-earth-600 flex flex-wrap items-center justify-center gap-3 mt-1">
-              <span><b>Mobile:</b> {business.phone}</span>
+              <span><b>{t('customers', 'phone', 'Mobile')}:</b> {business.phone}</span>
               <span>•</span>
               <span><b>GSTIN:</b> {business.gstin}</span>
               <span>•</span>
-              <span className="font-semibold text-rangoli-800">TAX INVOICE / CASH MEMO</span>
+              <span className="font-semibold text-rangoli-800">{t('invoices', 'taxInvoice', 'TAX INVOICE / CASH MEMO')}</span>
             </div>
           </div>
 
@@ -189,29 +197,29 @@ export const PrintableInvoiceModal: React.FC<PrintableInvoiceModalProps> = ({
           <div className="grid grid-cols-2 gap-3 text-xs bg-ivory-100/90 p-3.5 rounded-xl border border-rangoli-200">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-earth-500 block">
-                Billed To (Customer):
+                {t('invoices', 'billTo', 'Billed To (Customer):')}
               </span>
               <span className="text-sm font-bold text-earth-900 block mt-0.5">
                 {invoice.customerName}
               </span>
               <span className="text-[11px] text-earth-600">
-                Payment Mode: <b className="capitalize text-rangoli-800">{invoice.paymentStatus === 'credit' ? 'Udhar (Credit)' : invoice.paymentStatus.toUpperCase()}</b>
+                {t('sales', 'mode', 'Payment Mode')}: <b className="capitalize text-rangoli-800">{invoice.paymentStatus === 'credit' ? t('sales', 'credit', 'Udhar (Credit)') : invoice.paymentStatus.toUpperCase()}</b>
               </span>
             </div>
 
             <div className="text-right">
               <span className="text-[10px] font-bold uppercase tracking-wider text-earth-500 block">
-                Invoice Details:
+                {t('sales', 'invoiceNo', 'Invoice #')}:
               </span>
               <span className="font-mono font-bold text-earth-900 text-sm block mt-0.5">
                 {invoice.invoiceNo}
               </span>
               <span className="text-[11px] text-earth-600 block">
-                Date: <b>{new Date(invoice.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</b>
+                {t('sales', 'date', 'Date')}: <b>{new Date(invoice.createdAt).toLocaleDateString(uiLanguage || 'en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</b>
               </span>
               {isCredit && invoice.paymentDueDate && (
                 <span className="text-[11px] text-danger font-semibold block">
-                  Due Date: {invoice.paymentDueDate}
+                  {t('receivables', 'dueDate', 'Due Date')}: {invoice.paymentDueDate}
                 </span>
               )}
             </div>
@@ -223,10 +231,10 @@ export const PrintableInvoiceModal: React.FC<PrintableInvoiceModalProps> = ({
               <thead className="bg-rangoli-100/80 border-b border-rangoli-200 text-earth-800 font-bold uppercase tracking-wider text-[11px]">
                 <tr>
                   <th className="py-2.5 px-3">#</th>
-                  <th className="py-2.5 px-3">Item Description</th>
-                  <th className="py-2.5 px-3 text-right">Quantity</th>
-                  <th className="py-2.5 px-3 text-right">Rate (₹)</th>
-                  <th className="py-2.5 px-3 text-right">Amount (₹)</th>
+                  <th className="py-2.5 px-3">{t('invoices', 'itemDesc', 'Item Description')}</th>
+                  <th className="py-2.5 px-3 text-right">{t('invoices', 'qty', 'Quantity')}</th>
+                  <th className="py-2.5 px-3 text-right">{t('invoices', 'rate', 'Rate (₹)')}</th>
+                  <th className="py-2.5 px-3 text-right">{t('invoices', 'amount', 'Amount (₹)')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-rangoli-100 text-earth-900 font-medium">
@@ -247,26 +255,26 @@ export const PrintableInvoiceModal: React.FC<PrintableInvoiceModalProps> = ({
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div className="text-xs text-earth-600 space-y-1">
               <div className="font-semibold text-earth-800">
-                Terms & Conditions:
+                {t('invoices', 'termsAndConditions', 'Terms & Conditions:')}
               </div>
               <p className="text-[10px] leading-relaxed text-earth-500">
-                1. Goods once sold will not be returned without bill.<br />
-                2. Subject to local state jurisdiction.<br />
-                3. Computer generated invoice under KINETIC MSME OS.
+                {t('invoices', 'term1', '1. Goods once sold will not be returned without bill.')}<br />
+                {t('invoices', 'term2', '2. Subject to local state jurisdiction.')}<br />
+                {t('invoices', 'term3', '3. Computer generated invoice under KINETIC MSME OS.')}
               </p>
             </div>
 
             <div className="space-y-1.5 text-xs text-right">
               <div className="flex justify-between text-earth-600">
-                <span>Sub Total:</span>
+                <span>{t('invoices', 'subtotal', 'Sub Total')}:</span>
                 <span className="font-mono font-semibold">₹{invoice.totalAmount.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between text-earth-600">
-                <span>CGST / SGST (Included):</span>
+                <span>{t('invoices', 'cgstSgst', 'CGST / SGST (Included):')}</span>
                 <span className="font-mono">₹0.00</span>
               </div>
               <div className="border-t-2 border-dashed border-rangoli-300 pt-2 flex justify-between items-center text-sm font-bold text-earth-900">
-                <span className="text-base font-serif">Total Payable:</span>
+                <span className="text-base font-serif">{t('invoices', 'grandTotal', 'Total Payable')}:</span>
                 <span className="text-xl font-bold font-serif text-rangoli-700">
                   ₹{invoice.totalAmount.toLocaleString('en-IN')}
                 </span>
@@ -278,17 +286,21 @@ export const PrintableInvoiceModal: React.FC<PrintableInvoiceModalProps> = ({
           <div className="pt-4 border-t border-rangoli-200 flex items-end justify-between text-xs">
             <div>
               <p className="font-serif italic font-bold text-earth-800 text-sm">
-                धन्यवाद • फिर पधारिएगा! 🙏
+                {uiLanguage === 'pa-IN'
+                  ? 'ਧੰਨਵਾਦ • ਫਿਰ ਜ਼ਰੂਰ ਆਇਓ! 🙏'
+                  : uiLanguage === 'hi-IN'
+                  ? 'धन्यवाद • फिर पधारिएगा! 🙏'
+                  : 'Thank You • Visit Again! 🙏'}
               </p>
               <p className="text-[10px] text-earth-500">
-                Thank you for shopping at {business.name}
+                {t('invoices', 'thankYouShopping', 'Thank you for shopping at')} {business.name}
               </p>
             </div>
 
             <div className="text-center">
               <div className="h-8 border-b border-earth-400 w-36 mb-1" />
               <span className="text-[10px] font-bold text-earth-600 uppercase tracking-wider block">
-                Authorized Signatory
+                {t('invoices', 'authorizedSign', 'Authorized Signatory')}
               </span>
             </div>
           </div>
@@ -299,14 +311,14 @@ export const PrintableInvoiceModal: React.FC<PrintableInvoiceModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 rounded-xl border border-earth-300 hover:bg-earth-50 text-xs font-semibold text-earth-700 transition-colors"
             >
-              Close
+              {t('common', 'close', 'Close')}
             </button>
             <button
               onClick={handlePrint}
               className="px-5 py-2 rounded-xl bg-gradient-to-r from-rangoli-500 to-rangoli-600 hover:from-rangoli-600 hover:to-rangoli-700 text-white text-xs font-bold shadow-md hover:shadow-rangoli transition-all flex items-center gap-2 active:scale-95"
             >
               <Printer className="w-4 h-4" />
-              <span>Print Bill / Save PDF</span>
+              <span>{t('invoices', 'printBtn', 'Print Bill / Save PDF')}</span>
             </button>
           </div>
         </div>
