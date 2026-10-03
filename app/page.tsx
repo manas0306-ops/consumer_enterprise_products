@@ -54,8 +54,8 @@ export default function Home() {
       }`}
       dir={localeCfg.dir}
     >
-      {/* Subtle Rangoli Watermark in background (controlled by Rangoli Removal setting) */}
-      {showRangoli && <RangoliBackground opacity={0.035} />}
+      {/* Signature Translucent Indian Rangoli Canvas (User Uploaded Motif) */}
+      {showRangoli && <RangoliBackground opacity={0.12} />}
 
       {/* Responsive Sidebar (264px solid S1, auto-flipped in RTL) */}
       <Sidebar

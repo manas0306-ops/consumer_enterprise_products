@@ -35,8 +35,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
   return (
     <div className="relative min-h-screen bg-ivory-50 text-earth-900 flex flex-col justify-between overflow-hidden selection:bg-rangoli-200">
-      {/* Subtle Rangoli Watermark Background */}
-      <RangoliBackground opacity={0.06} />
+      {/* Signature Translucent Indian Rangoli Canvas Background */}
+      <RangoliBackground opacity={0.18} />
 
       {/* Header */}
       <header className="relative z-10 p-6 max-w-7xl mx-auto w-full flex items-center justify-between">

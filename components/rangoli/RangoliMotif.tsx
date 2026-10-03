@@ -337,22 +337,33 @@ export const VoiceVisualizer: React.FC<{
   );
 };
 
-// Subtle Full-Page Background Watermark
-export const RangoliBackground: React.FC<{ opacity?: number; className?: string }> = ({
-  opacity = 0.04,
+// Signature Full-Canvas Translucent Indian Rangoli Background (Design System §5 & §39)
+export const RangoliBackground: React.FC<{
+  opacity?: number;
+  className?: string;
+  variant?: 'center' | 'right' | 'subtle';
+}> = ({
+  opacity = 0.12,
   className = '',
+  variant = 'center',
 }) => {
   return (
     <div
-      className={`fixed inset-0 pointer-events-none select-none overflow-hidden flex items-center justify-end ${className}`}
-      style={{ opacity, zIndex: 0 }}
+      className={`fixed inset-0 pointer-events-none select-none overflow-hidden flex items-center justify-center ${className}`}
+      style={{ zIndex: 0 }}
+      aria-hidden="true"
     >
-      <div className="relative w-[700px] h-[700px] lg:w-[950px] lg:h-[950px] -right-48 animate-mandala-spin-slow">
+      <div
+        className={`relative w-[850px] h-[850px] sm:w-[1100px] sm:h-[1100px] lg:w-[1350px] lg:h-[1350px] animate-mandala-spin-slow mix-blend-multiply transition-opacity duration-700 ${
+          variant === 'right' ? 'translate-x-1/4' : ''
+        }`}
+        style={{ opacity }}
+      >
         <Image
           src="/assets/rangoli_mandala.jpg"
           alt="Traditional Indian Rangoli Canvas"
           fill
-          sizes="(max-width: 768px) 700px, 950px"
+          sizes="(max-width: 768px) 850px, (max-width: 1200px) 1100px, 1350px"
           className="object-contain filter contrast-125"
           priority
         />
