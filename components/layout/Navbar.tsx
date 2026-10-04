@@ -200,27 +200,32 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* User Account / Session Pill */}
-          {user && !isDemoMode ? (
+          {user ? (
             <button
               onClick={() => logout()}
               className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-rangoli-200 bg-white hover:bg-rangoli-50 text-xs font-semibold text-earth-700 transition-colors flex items-center gap-1.5 shadow-xs"
-              title={`Logged in as ${user.email}. Click to sign out.`}
+              title={`Logged in as ${user.email} (${isDemoMode ? 'Demo' : 'Cloud'}). Click to sign out.`}
             >
               <div className="w-5 h-5 rounded-full bg-rangoli-500 text-white font-bold text-[10px] flex items-center justify-center">
                 {user.fullName ? user.fullName[0].toUpperCase() : 'U'}
               </div>
               <span className="hidden lg:inline">{user.fullName || user.email.split('@')[0]}</span>
+              {isDemoMode && (
+                <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full border border-amber-300">
+                  Demo
+                </span>
+              )}
               <LogOut className="w-3 h-3 text-earth-400 hover:text-earth-700 ml-0.5" />
             </button>
           ) : (
-            <Link
-              href="/login"
+            <button
+              onClick={() => logout()}
               className="px-2.5 py-1.5 rounded-lg border border-rangoli-300 bg-white hover:bg-rangoli-50 text-xs font-bold text-rangoli-700 transition-colors flex items-center gap-1 shadow-xs"
-              title="Sign in with Cloud PostgreSQL database"
+              title="Return to Login / Registration"
             >
               <Lock className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Sign In</span>
-            </Link>
+            </button>
           )}
         </div>
       </div>

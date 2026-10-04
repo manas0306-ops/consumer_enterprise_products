@@ -162,15 +162,11 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Supabase Auth & Multi-Tenancy State
-  const [user, setUser] = useState<AuthUser | null>({
-    id: 'demo-user-001',
-    email: 'sharma@kirana-delhi.in',
-    fullName: 'Ramesh Sharma',
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [session, setSession] = useState<any | null>(null);
-  const [businessId, setBusinessId] = useState<string | null>('biz-sharma-kirana-001');
+  const [businessId, setBusinessId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<'owner' | 'cashier' | 'accountant'>('owner');
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(false);
 
   // Multilingual & Locale State
@@ -528,7 +524,13 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
     setUser(null);
     setSession(null);
-    enterDemoMode();
+    setIsDemoMode(false);
+    setBusinessId(null);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {
+      console.warn('Error clearing storage on logout', e);
+    }
   };
 
   const enterDemoMode = () => {
@@ -1353,6 +1355,7 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const resetToDemo = () => {
+    enterDemoMode();
     setBusiness(initialBusiness);
     setProducts(initialProducts);
     setCustomers(initialCustomers);
@@ -1363,7 +1366,6 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setActivityEvents(initialActivityEvents);
     setSyncQueue([]);
     setDeviceTelemetry(initialDeviceTelemetry);
-    localStorage.removeItem(STORAGE_KEY);
   };
 
   const resetToBlank = () => {

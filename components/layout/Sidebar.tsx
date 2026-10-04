@@ -20,6 +20,7 @@ import {
   Globe,
   Mic,
   Cpu,
+  LogOut,
 } from 'lucide-react';
 import { RangoliCore, RangoliCorner } from '@/components/rangoli/RangoliMotif';
 import { useBusiness } from '@/context/BusinessContext';
@@ -62,6 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     resetToDemo,
     uiLanguage,
     setIsLanguageModalOpen,
+    logout,
     t,
   } = useBusiness();
 
@@ -222,6 +224,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Zap className="w-3.5 h-3.5" />
             <span>{t('nav', 'speakOrType', 'Speak or Type to AI')}</span>
+          </button>
+
+          {/* Sign Out / Switch Store */}
+          <button
+            onClick={() => logout()}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg border border-sand bg-white text-xs font-semibold text-earth-700 hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors shadow-2xs"
+            title="Log out and return to Login/Registration screen"
+          >
+            <LogOut className="w-3.5 h-3.5 text-earth-400" />
+            <span>{t('nav', 'signOut', 'Sign Out / Switch Store')}</span>
           </button>
         </div>
       </aside>

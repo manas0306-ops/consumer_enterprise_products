@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedBusiness, getSupabaseAdminClient, isServerSupabaseConfigured } from '@/lib/supabase/server';
 
-export const dynamic = 'force-dynamic';
-
 export async function GET(req: NextRequest) {
   try {
     const auth = await getAuthenticatedBusiness(req);

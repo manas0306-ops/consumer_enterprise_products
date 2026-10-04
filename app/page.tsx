@@ -20,6 +20,7 @@ import { AskKineticManager } from '@/components/assistant/AskKineticManager';
 import { SyncCenterManager } from '@/components/sync/SyncCenterManager';
 import { DeviceManager } from '@/components/device/DeviceManager';
 import { LandingPage } from '@/components/auth/LandingPage';
+import { AuthGateway } from '@/components/auth/AuthGateway';
 import { QuickSaleModal } from '@/components/modals/QuickSaleModal';
 import { QuickPaymentModal } from '@/components/modals/QuickPaymentModal';
 import { LanguageSelectorModal } from '@/components/modals/LanguageSelectorModal';
@@ -29,7 +30,7 @@ import { useBusiness } from '@/context/BusinessContext';
 import { getLocaleConfig } from '@/lib/i18n/locales.config';
 
 export default function Home() {
-  const [inApp, setInApp] = useState(false);
+  const [showLandingTour, setShowLandingTour] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [isOpenMobile, setIsOpenMobile] = useState(false);
   const [showQuickSale, setShowQuickSale] = useState(false);
@@ -37,6 +38,8 @@ export default function Home() {
   const [voiceSampleText, setVoiceSampleText] = useState<string | null>(null);
 
   const {
+    user,
+    isDemoMode,
     uiLanguage,
     setUiLanguage,
     showRangoli,
@@ -47,10 +50,15 @@ export default function Home() {
   const localeCfg = getLocaleConfig(uiLanguage);
   const isRTL = localeCfg.dir === 'rtl';
 
-  // If user is on landing page, display the Hero presentation
-  if (!inApp) {
-    return <LandingPage onEnterApp={() => setInApp(true)} />;
+  // 1. FIRST: Display Login/Registration Gateway for unauthenticated visitors
+  if (!user && !isDemoMode) {
+    if (showLandingTour) {
+      return <LandingPage onEnterApp={() => setShowLandingTour(false)} />;
+    }
+    return <AuthGateway onViewLanding={() => setShowLandingTour(true)} />;
   }
+
+  // 2. THEN: Render Full Dashboard & Business OS once authenticated
 
   return (
     <div
