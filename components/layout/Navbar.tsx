@@ -51,12 +51,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   const getPageTitle = (tab: ActiveTab) => {
     switch (tab) {
       case 'dashboard': return t('dashboard', 'title', 'Business Command Dashboard');
+      case 'voice': return 'Voice Transaction Center';
+      case 'ask': return 'Ask KINETIC — Business Intelligence';
       case 'assistant': return t('assistant', 'title', 'KINETIC Conversational AI');
       case 'sales': return t('sales', 'title', 'Sales Register & Invoices');
       case 'purchases': return t('purchases', 'title', 'Stock Procurement & Purchases');
       case 'inventory': return t('inventory', 'title', 'Inventory & Stock Engine');
       case 'customers': return t('customers', 'title', 'Customer Directory & Khata');
       case 'receivables': return t('receivables', 'title', 'Udhar / Receivables Ledger');
+      case 'sync': return 'Connectivity & Sync Center';
+      case 'device': return 'KINETIC Smart Voice Terminal';
       case 'analytics': return t('analytics', 'title', 'Financial Analytics & Trends');
       case 'insights': return t('insights', 'title', 'AI Business Insights');
       case 'alerts': return t('alerts', 'title', 'Live System Alerts');

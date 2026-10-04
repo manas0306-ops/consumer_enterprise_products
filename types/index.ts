@@ -218,3 +218,60 @@ export interface ModelTelemetry {
   avgLatencyMs: number;
   costSavedINR: number;
 }
+
+export type ActivityType =
+  | 'voice_transaction'
+  | 'sale'
+  | 'purchase'
+  | 'inventory_update'
+  | 'receivable_created'
+  | 'payment'
+  | 'customer_update'
+  | 'ai_insight'
+  | 'sync_event';
+
+export interface ActivityEvent {
+  id: string;
+  type: ActivityType;
+  title: string;
+  description: string;
+  timestamp: string;
+  source: 'voice' | 'manual' | 'ai_system' | 'sync';
+  audit?: {
+    createdBy: string;
+    confirmedBy?: string;
+    sourceInput?: string;
+    language?: string;
+    status: 'confirmed' | 'buffered' | 'synced' | 'pending';
+  };
+}
+
+export interface SyncQueueItem {
+  id: string;
+  type: 'sale' | 'payment';
+  payload: any;
+  summary: string;
+  amount: number;
+  partyName: string;
+  timestamp: string;
+  status: 'pending' | 'syncing' | 'synced';
+}
+
+export interface DeviceTelemetry {
+  id: string;
+  name: string;
+  model: string;
+  serialNumber: string;
+  status: 'online' | 'offline' | 'buffering';
+  isSimulated: boolean;
+  wifiStatus: 'connected' | 'disconnected' | 'connecting';
+  cellularStatus: 'standby' | 'active' | 'unavailable';
+  storageStatus: 'ready' | 'buffering' | 'full';
+  micStatus: 'ready' | 'listening' | 'error';
+  speakerStatus: 'ready' | 'playing' | 'error';
+  displayStatus: 'ready' | 'error';
+  batteryPct: number;
+  rssi: number;
+  uptimeSeconds: number;
+  lastPing: string;
+}

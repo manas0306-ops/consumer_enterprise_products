@@ -13,19 +13,67 @@ import {
   TrendingDown,
   ShoppingBag,
   CheckCircle,
+  Sparkles,
+  Truck,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 import { useBusiness } from '@/context/BusinessContext';
 import { Product } from '@/types';
 import { RangoliCorner } from '@/components/rangoli/RangoliMotif';
 
 export const InventoryManager: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct, suppliers, t } = useBusiness();
+  const { products, addProduct, updateProduct, deleteProduct, suppliers, recordPurchase, t } = useBusiness();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [stockFilter, setStockFilter] = useState<'ALL' | 'LOW' | 'OOS'>('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [poSuccessMsg, setPoSuccessMsg] = useState<string | null>(null);
+
+  // Summary Metrics
+  const healthyCount = products.filter((p) => p.quantity > p.reorderLevel).length;
+  const lowCount = products.filter((p) => p.quantity <= p.reorderLevel && p.quantity > 0).length;
+  const criticalCount = products.filter((p) => p.quantity <= 0).length;
+  const totalValuation = products.reduce((acc, p) => acc + p.quantity * p.purchasePrice, 0);
+
+  // AI Restock Recommendations (Section 14)
+  const restockRecommendations = products
+    .filter((p) => p.quantity <= p.reorderLevel)
+    .map((p) => {
+      const isCritical = p.quantity <= 0;
+      const daysLeft = isCritical ? 0 : Math.max(1, Math.round((p.quantity / (p.reorderLevel || 10)) * 3));
+      const suggestedReorder = Math.max(20, p.reorderLevel * 2);
+      return {
+        product: p,
+        daysLeft,
+        suggestedReorder,
+        urgency: isCritical ? 'CRITICAL' : daysLeft <= 2 ? 'HIGH' : 'MEDIUM',
+        supplier: p.supplierName || 'Primary Mandi Supplier',
+      };
+    });
+
+  const handleCreatePO = (rec: typeof restockRecommendations[0]) => {
+    const res = recordPurchase({
+      supplierName: rec.supplier,
+      items: [
+        {
+          productName: rec.product.name,
+          quantity: rec.suggestedReorder,
+          unitPrice: rec.product.purchasePrice,
+          unit: rec.product.unit,
+        },
+      ],
+      totalAmount: rec.suggestedReorder * rec.product.purchasePrice,
+      paymentStatus: 'cash',
+    });
+
+    if (res.success) {
+      setPoSuccessMsg(`Purchase Order placed for ${rec.suggestedReorder} ${rec.product.unit} of ${rec.product.name}! Stock replenished immediately.`);
+      setTimeout(() => setPoSuccessMsg(null), 4000);
+    }
+  };
 
   // New Product Form State
   const [formState, setFormState] = useState({
@@ -150,6 +198,106 @@ export const InventoryManager: React.FC = () => {
         </button>
       </div>
 
+      {/* Notification banner for PO */}
+      {poSuccessMsg && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-2xs">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{poSuccessMsg}</span>
+        </div>
+      )}
+
+      {/* Summary Metrics Bar (Section 14) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-rangoli-200/90 shadow-2xs">
+          <span className="text-[10px] text-earth-500 font-bold uppercase tracking-wider block">Total SKUs</span>
+          <span className="text-xl font-bold text-earth-900 font-serif mt-0.5 block">{products.length} Items</span>
+          <span className="text-[11px] text-earth-400 mt-1 block">Valuation: ₹{totalValuation.toLocaleString('en-IN')}</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 shadow-2xs">
+          <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">Healthy Stock</span>
+          <span className="text-xl font-bold text-emerald-800 font-serif mt-0.5 block">{healthyCount} SKUs</span>
+          <span className="text-[11px] text-emerald-600 mt-1 block">Above reorder threshold</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 shadow-2xs">
+          <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">Low Stock</span>
+          <span className="text-xl font-bold text-amber-800 font-serif mt-0.5 block">{lowCount} SKUs</span>
+          <span className="text-[11px] text-amber-600 mt-1 block">Needs replenishment</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-red-50/70 border border-red-200 shadow-2xs">
+          <span className="text-[10px] text-red-700 font-bold uppercase tracking-wider block">Critical / OOS</span>
+          <span className="text-xl font-bold text-red-800 font-serif mt-0.5 block">{criticalCount} SKUs</span>
+          <span className="text-[11px] text-red-600 mt-1 block">Immediate action required</span>
+        </div>
+      </div>
+
+      {/* AI Restock Recommendations (Section 14) */}
+      {restockRecommendations.length > 0 && (
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-rangoli-50/90 to-amber-50/60 border border-rangoli-300 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-rangoli-600" />
+              <h3 className="text-sm font-bold text-earth-900 font-serif">
+                AI Restock Recommendations
+              </h3>
+            </div>
+            <span className="text-[11px] text-earth-500 font-medium">
+              Based on consumption rate & recent sales velocity
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {restockRecommendations.map((rec) => (
+              <div
+                key={rec.product.id}
+                className="p-3.5 rounded-xl bg-white border border-rangoli-200 shadow-2xs flex flex-col justify-between space-y-3"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-bold text-sm text-earth-900">{rec.product.name}</span>
+                    <span
+                      className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                        rec.urgency === 'CRITICAL'
+                          ? 'bg-red-100 text-red-800 border border-red-300'
+                          : 'bg-amber-100 text-amber-800 border border-amber-300'
+                      }`}
+                    >
+                      {rec.urgency}
+                    </span>
+                  </div>
+                  <p className="text-xs text-earth-600 mt-1.5 leading-relaxed">
+                    Stock will run out in{' '}
+                    <strong className="text-earth-900 font-bold">
+                      {rec.daysLeft === 0 ? 'today (Out of Stock)' : `${rec.daysLeft} days`}
+                    </strong>{' '}
+                    based on this week's sales.
+                  </p>
+                  <div className="mt-2 text-[11px] text-earth-500 flex items-center justify-between">
+                    <span>Suggested reorder:</span>
+                    <strong className="text-rangoli-800 font-bold">
+                      {rec.suggestedReorder} {rec.product.unit} (₹{(rec.suggestedReorder * rec.product.purchasePrice).toLocaleString('en-IN')})
+                    </strong>
+                  </div>
+                  <span className="text-[10px] text-earth-400 block mt-0.5">
+                    Supplier: {rec.supplier}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => handleCreatePO(rec)}
+                  className="w-full py-2 px-3 rounded-lg bg-rangoli-500 hover:bg-rangoli-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all"
+                >
+                  <Truck className="w-3.5 h-3.5" />
+                  <span>Create Purchase Order</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Search and Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Search */}
@@ -221,7 +369,7 @@ export const InventoryManager: React.FC = () => {
           <table className="w-full text-left text-xs text-earth-800">
             <thead className="bg-ivory-100/80 border-b border-rangoli-200 text-earth-600 font-semibold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-4">{t('inventory', 'productName', 'Product & Category')}</th>
+                <th className="py-3 px-4">{t('inventory', 'productName', 'Product & Supplier')}</th>
                 <th className="py-3 px-4">SKU</th>
                 <th className="py-3 px-4 text-right">{t('inventory', 'stock', 'Available Quantity')}</th>
                 <th className="py-3 px-4 text-right">{t('inventory', 'costPrice', 'Buy Price')}</th>
@@ -232,7 +380,7 @@ export const InventoryManager: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-rangoli-100 font-medium">
               {filteredProducts.map((p) => {
-                const isOOS = p.quantity <= 0;
+                const isCritical = p.quantity <= 0;
                 const isLow = p.quantity <= p.reorderLevel;
 
                 return (
@@ -242,6 +390,11 @@ export const InventoryManager: React.FC = () => {
                       <div className="text-[11px] text-earth-500">
                         {p.nameHindi && <span className="font-serif mr-2">{p.nameHindi}</span>}
                         <span>{p.category}</span>
+                        {p.supplierName && (
+                          <span className="text-[10px] text-earth-400 block mt-0.5">
+                            Supplier: {p.supplierName}
+                          </span>
+                        )}
                       </div>
                     </td>
 
@@ -267,17 +420,17 @@ export const InventoryManager: React.FC = () => {
                     </td>
 
                     <td className="py-3 px-4 text-center">
-                      {isOOS ? (
-                        <span className="px-2.5 py-0.5 rounded-full bg-danger/10 text-danger border border-danger/30 text-[10px] font-bold inline-block">
-                          {t('common', 'outOfStock', 'Out of Stock')}
+                      {isCritical ? (
+                        <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-300 text-[10px] font-bold inline-block">
+                          Critical (OOS)
                         </span>
                       ) : isLow ? (
-                        <span className="px-2.5 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/30 text-[10px] font-bold inline-block">
-                          {t('common', 'lowStock', 'Low Stock')}
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold inline-block">
+                          Low Stock
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full bg-success/10 text-success border border-success/30 text-[10px] font-bold inline-block">
-                          {t('common', 'healthy', 'Healthy')}
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold inline-block">
+                          Healthy
                         </span>
                       )}
                     </td>

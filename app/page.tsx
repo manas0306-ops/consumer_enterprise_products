@@ -15,6 +15,10 @@ import { AIInsights } from '@/components/insights/AIInsights';
 import { AlertsManager } from '@/components/alerts/AlertsManager';
 import { DocumentProcessor } from '@/components/documents/DocumentProcessor';
 import { SettingsManager } from '@/components/settings/SettingsManager';
+import { VoiceTransactionManager } from '@/components/voice/VoiceTransactionManager';
+import { AskKineticManager } from '@/components/assistant/AskKineticManager';
+import { SyncCenterManager } from '@/components/sync/SyncCenterManager';
+import { DeviceManager } from '@/components/device/DeviceManager';
 import { LandingPage } from '@/components/auth/LandingPage';
 import { QuickSaleModal } from '@/components/modals/QuickSaleModal';
 import { QuickPaymentModal } from '@/components/modals/QuickPaymentModal';
@@ -30,6 +34,7 @@ export default function Home() {
   const [isOpenMobile, setIsOpenMobile] = useState(false);
   const [showQuickSale, setShowQuickSale] = useState(false);
   const [showQuickPayment, setShowQuickPayment] = useState(false);
+  const [voiceSampleText, setVoiceSampleText] = useState<string | null>(null);
 
   const {
     uiLanguage,
@@ -91,6 +96,25 @@ export default function Home() {
             />
           )}
 
+          {activeTab === 'voice' && (
+            <VoiceTransactionManager
+              onNavigate={(tab) => setActiveTab(tab as ActiveTab)}
+              initialSpeechText={voiceSampleText || undefined}
+            />
+          )}
+
+          {activeTab === 'ask' && (
+            <AskKineticManager onNavigate={(tab) => setActiveTab(tab as ActiveTab)} />
+          )}
+
+          {activeTab === 'sync' && (
+            <SyncCenterManager />
+          )}
+
+          {activeTab === 'device' && (
+            <DeviceManager />
+          )}
+
           {activeTab === 'assistant' && (
             <AIAssistant onNavigateTo={(tab) => setActiveTab(tab as ActiveTab)} />
           )}
@@ -147,8 +171,9 @@ export default function Home() {
       {/* Hackathon 3-Minute Demo Presentation Guide Widget */}
       <HackathonDemoGuide
         setActiveTab={setActiveTab}
-        onRunVoiceSample={(_sampleText) => {
-          setActiveTab('assistant');
+        onRunVoiceSample={(sampleText) => {
+          setVoiceSampleText(sampleText);
+          setActiveTab('voice');
         }}
       />
     </div>

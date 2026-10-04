@@ -1,4 +1,4 @@
-import { Business, Customer, Product, Supplier, Sale, Receivable, Alert, ModelTelemetry } from '@/types';
+import { Business, Customer, Product, Supplier, Sale, Receivable, Alert, ModelTelemetry, ActivityEvent, DeviceTelemetry } from '@/types';
 
 export const initialBusiness: Business = {
   id: 'biz_001',
@@ -365,4 +365,91 @@ export const initialTelemetry: ModelTelemetry = {
   estimatedTokensSaved: 18450,
   avgLatencyMs: 24,
   costSavedINR: 112.5,
+};
+
+export const initialActivityEvents: ActivityEvent[] = [
+  {
+    id: 'act_001',
+    type: 'voice_transaction',
+    title: 'Voice Transaction Recorded',
+    description: 'Ramesh Verma → Basmati Rice (5 kg) → ₹600 (Credit)',
+    timestamp: new Date(Date.now() - 18 * 60000).toISOString(),
+    source: 'voice',
+    audit: {
+      createdBy: 'KINETIC AI Engine',
+      confirmedBy: 'Maanas Pandey (Owner)',
+      sourceInput: 'Ramesh ko 5 kilo chawal ₹600 mein udhaar diya.',
+      language: 'Hindi (हिन्दी)',
+      status: 'confirmed',
+    },
+  },
+  {
+    id: 'act_002',
+    type: 'inventory_update',
+    title: 'Inventory Deducted',
+    description: 'Basmati Rice Premium: 50 kg → 45 kg (-5 kg)',
+    timestamp: new Date(Date.now() - 18 * 60000).toISOString(),
+    source: 'ai_system',
+    audit: {
+      createdBy: 'Deterministic Business Engine',
+      confirmedBy: 'Maanas Pandey (Owner)',
+      status: 'confirmed',
+    },
+  },
+  {
+    id: 'act_003',
+    type: 'receivable_created',
+    title: 'Bahi-Khata Udhar Created',
+    description: 'Ramesh Verma: +₹600 balance added to ledger',
+    timestamp: new Date(Date.now() - 18 * 60000).toISOString(),
+    source: 'ai_system',
+    audit: {
+      createdBy: 'Deterministic Business Engine',
+      confirmedBy: 'Maanas Pandey (Owner)',
+      status: 'confirmed',
+    },
+  },
+  {
+    id: 'act_004',
+    type: 'payment',
+    title: 'Payment Received via UPI',
+    description: 'Suresh Kumar settled ₹1,200 via UPI QR',
+    timestamp: new Date(Date.now() - 110 * 60000).toISOString(),
+    source: 'manual',
+    audit: {
+      createdBy: 'Owner Entry',
+      status: 'confirmed',
+    },
+  },
+  {
+    id: 'act_005',
+    type: 'sync_event',
+    title: 'Local Buffer Synchronized',
+    description: '3 offline transactions synchronized to KINETIC Cloud',
+    timestamp: new Date(Date.now() - 240 * 60000).toISOString(),
+    source: 'sync',
+    audit: {
+      createdBy: 'Sync Resilience Manager',
+      status: 'synced',
+    },
+  },
+];
+
+export const initialDeviceTelemetry: DeviceTelemetry = {
+  id: 'dev_term_001',
+  name: 'KINETIC Smart Voice Terminal',
+  model: 'KVT-ESP32-S3-PRO',
+  serialNumber: 'KNT-2026-IN-00918',
+  status: 'online',
+  isSimulated: true,
+  wifiStatus: 'connected',
+  cellularStatus: 'standby',
+  storageStatus: 'ready',
+  micStatus: 'ready',
+  speakerStatus: 'ready',
+  displayStatus: 'ready',
+  batteryPct: 94,
+  rssi: -58,
+  uptimeSeconds: 14280,
+  lastPing: new Date().toISOString(),
 };

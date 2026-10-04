@@ -1,5 +1,4 @@
 'use client';
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   Business,
@@ -13,6 +12,9 @@ import {
   ModelTelemetry,
   PaymentStatus,
   AIIntentResult,
+  ActivityEvent,
+  SyncQueueItem,
+  DeviceTelemetry,
 } from '@/types';
 import {
   initialBusiness,
@@ -22,6 +24,8 @@ import {
   initialSales,
   initialReceivables,
   initialTelemetry,
+  initialActivityEvents,
+  initialDeviceTelemetry,
 } from '@/lib/db/initialData';
 
 import { getLocaleConfig } from '@/lib/i18n/locales.config';
@@ -90,8 +94,25 @@ interface BusinessContextType {
   recordTelemetry: (isCloud: boolean, latencyMs: number, tokens: number) => void;
   resetToDemo: () => void;
   resetToBlank: () => void;
+  // Activity Timeline & Audit Trail
+  activityEvents: ActivityEvent[];
+  addActivityEvent: (event: Omit<ActivityEvent, 'id' | 'timestamp'>) => void;
+  // Connectivity Resilience & Sync Queue
+  isOnline: boolean;
+  setIsOnline: (online: boolean) => void;
+  syncQueue: SyncQueueItem[];
+  addToSyncQueue: (item: Omit<SyncQueueItem, 'id' | 'timestamp' | 'status'>) => void;
+  syncPendingQueue: () => Promise<{ success: boolean; syncedCount: number }>;
+  clearSyncQueue: () => void;
+  // Device Hardware Status
+  deviceTelemetry: DeviceTelemetry;
+  updateDeviceTelemetry: (telemetry: Partial<DeviceTelemetry>) => void;
   // Computed dynamic metrics
   todaySalesTotal: number;
+  todaySalesCount: number;
+  todayCreditSalesTotal: number;
+  todayPaymentsReceivedTotal: number;
+  todayInventoryChangesCount: number;
   totalReceivables: number;
   totalInventoryValue: number;
   lowStockCount: number;
@@ -121,6 +142,16 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [calendarSystem, setCalendarSystem] = useState<CalendarSystem>('indian');
   const [showRangoli, setShowRangoli] = useState<boolean>(true);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState<boolean>(false);
+
+  // Activity Timeline & Audit Trail
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>(initialActivityEvents);
+
+  // Connectivity Resilience & Sync Queue
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [syncQueue, setSyncQueue] = useState<SyncQueueItem[]>([]);
+
+  // Device Hardware Status
+  const [deviceTelemetry, setDeviceTelemetry] = useState<DeviceTelemetry>(initialDeviceTelemetry);
 
   // Undo Stack (8-second window)
   const [undoSnapshot, setUndoSnapshot] = useState<{
@@ -160,6 +191,8 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (parsed.sales) setSales(parsed.sales);
         if (parsed.receivables) setReceivables(parsed.receivables);
         if (parsed.telemetry) setTelemetry(parsed.telemetry);
+        if (parsed.activityEvents) setActivityEvents(parsed.activityEvents);
+        if (parsed.syncQueue) setSyncQueue(parsed.syncQueue);
       }
     } catch (e) {
       console.warn('Could not parse stored business data, using defaults', e);
@@ -181,12 +214,51 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           sales,
           receivables,
           telemetry,
+          activityEvents,
+          syncQueue,
         })
       );
     } catch (e) {
       console.error('Failed to save to local storage', e);
     }
-  }, [business, products, customers, suppliers, sales, receivables, telemetry, isHydrated]);
+  }, [business, products, customers, suppliers, sales, receivables, telemetry, activityEvents, syncQueue, isHydrated]);
+
+  const addActivityEvent = (event: Omit<ActivityEvent, 'id' | 'timestamp'>) => {
+    const newEvt: ActivityEvent = {
+      ...event,
+      id: `act_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      timestamp: new Date().toISOString(),
+    };
+    setActivityEvents((prev) => [newEvt, ...prev.slice(0, 49)]);
+  };
+
+  const addToSyncQueue = (item: Omit<SyncQueueItem, 'id' | 'timestamp' | 'status'>) => {
+    const newItem: SyncQueueItem = {
+      ...item,
+      id: `sync_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      timestamp: new Date().toISOString(),
+      status: 'pending',
+    };
+    setSyncQueue((prev) => [...prev, newItem]);
+    addActivityEvent({
+      type: 'sync_event',
+      title: 'Transaction Safely Buffered Locally',
+      description: `${item.summary} preserved in offline storage (pending sync)`,
+      source: 'sync',
+      audit: {
+        createdBy: 'Offline Resilience Buffer',
+        status: 'buffered',
+      },
+    });
+  };
+
+  const clearSyncQueue = () => {
+    setSyncQueue([]);
+  };
+
+  const updateDeviceTelemetry = (telemetryUpdate: Partial<DeviceTelemetry>) => {
+    setDeviceTelemetry((prev) => ({ ...prev, ...telemetryUpdate }));
+  };
 
   // Recalculate dynamic alerts based on live inventory and receivables state
   useEffect(() => {
@@ -288,6 +360,44 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const invoiceNo = `INV-2026-${String(sales.length + 101).padStart(4, '0')}`;
     const isCredit = saleInput.paymentStatus === 'credit';
     const isPartial = saleInput.paymentStatus === 'partial';
+
+    // Offline Resilience Buffer Check
+    if (!isOnline) {
+      addToSyncQueue({
+        type: 'sale',
+        payload: saleInput,
+        summary: `${saleInput.customerName} → ${saleInput.items.map((i) => `${i.productName} (${i.quantity}${i.unit || 'kg'})`).join(', ')}`,
+        amount: saleInput.totalAmount,
+        partyName: saleInput.customerName,
+      });
+
+      const bufferedSale: Sale = {
+        id: `sale_buf_${Date.now()}`,
+        invoiceNo: `INV-BUF-${Date.now().toString().slice(-4)}`,
+        customerId: `cust_temp`,
+        customerName: saleInput.customerName,
+        items: saleInput.items.map((i) => ({
+          productId: 'prod_buf',
+          productName: i.productName,
+          quantity: i.quantity,
+          unit: i.unit || 'kg',
+          unitPrice: saleInput.totalAmount / (i.quantity || 1),
+          totalPrice: saleInput.totalAmount,
+        })),
+        totalAmount: saleInput.totalAmount,
+        paidAmount: isCredit ? 0 : saleInput.totalAmount,
+        balanceAmount: isCredit ? saleInput.totalAmount : 0,
+        paymentStatus: saleInput.paymentStatus,
+        createdAt: new Date().toISOString(),
+        notes: 'Safely buffered in local offline storage',
+      };
+
+      return {
+        success: true,
+        sale: bufferedSale,
+        message: `Offline mode: Transaction of ₹${saleInput.totalAmount.toLocaleString('en-IN')} safely preserved in local buffer. Will synchronize when online.`,
+      };
+    }
 
     // 1. Resolve or Create Customer
     let customer = customers.find(
@@ -404,6 +514,59 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       setReceivables((prev) => [newReceivable, ...prev]);
     }
+
+    // 4. Log Events to Activity Timeline & Audit Trail
+    const isVoice = !!saleInput.notes?.toLowerCase().includes('voice');
+    addActivityEvent({
+      type: isVoice ? 'voice_transaction' : 'sale',
+      title: `${isVoice ? 'Voice Transaction Confirmed' : 'Sale Recorded'} (#${invoiceNo})`,
+      description: `${saleInput.customerName} → ${finalItems.map((i) => `${i.productName} (${i.quantity} ${i.unit})`).join(', ')} → ₹${saleInput.totalAmount.toLocaleString('en-IN')} (${isCredit ? 'Credit' : 'Paid'})`,
+      source: isVoice ? 'voice' : 'manual',
+      audit: {
+        createdBy: isVoice ? 'KINETIC AI Engine' : 'Owner Entry',
+        confirmedBy: `${business.ownerName || 'Business Owner'}`,
+        sourceInput: saleInput.notes,
+        language: uiLanguage,
+        status: 'confirmed',
+      },
+    });
+
+    addActivityEvent({
+      type: 'inventory_update',
+      title: 'Inventory Deducted',
+      description: `${finalItems.map((i) => `${i.productName}: -${i.quantity} ${i.unit}`).join(', ')}`,
+      source: 'ai_system',
+      audit: {
+        createdBy: 'Deterministic Business Engine',
+        confirmedBy: `${business.ownerName || 'Business Owner'}`,
+        status: 'confirmed',
+      },
+    });
+
+    if (isCredit) {
+      addActivityEvent({
+        type: 'receivable_created',
+        title: 'Bahi-Khata Udhar Created',
+        description: `${saleInput.customerName}: +₹${saleInput.totalAmount.toLocaleString('en-IN')} added to ledger`,
+        source: 'ai_system',
+        audit: {
+          createdBy: 'Deterministic Business Engine',
+          confirmedBy: `${business.ownerName || 'Business Owner'}`,
+          status: 'confirmed',
+        },
+      });
+    }
+
+    addActivityEvent({
+      type: 'customer_update',
+      title: 'Customer Ledger Updated',
+      description: `${saleInput.customerName} account updated with new purchase`,
+      source: 'ai_system',
+      audit: {
+        createdBy: 'Deterministic Business Engine',
+        status: 'confirmed',
+      },
+    });
 
     // Design System §19: 8-second Undo Window
     setUndoSnapshot({
@@ -551,6 +714,17 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       createdAt: new Date().toISOString(),
     };
 
+    addActivityEvent({
+      type: 'purchase',
+      title: `Stock Procurement (#${invoiceNo})`,
+      description: `${purchaseInput.supplierName} → ${purchaseItems.map((i) => `${i.productName} (${i.quantity} ${i.unit})`).join(', ')} → ₹${purchaseInput.totalAmount.toLocaleString('en-IN')}`,
+      source: 'manual',
+      audit: {
+        createdBy: 'Business Owner',
+        status: 'confirmed',
+      },
+    });
+
     return {
       success: true,
       purchase: newPurchase,
@@ -566,6 +740,7 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     notes?: string;
   }) => {
     let unallocated = paymentInput.amount;
+    const targetCust = customers.find((c) => c.id === paymentInput.customerId);
 
     // 1. Update Customer Pending Balance
     setCustomers((prev) =>
@@ -603,10 +778,146 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       })
     );
 
+    // Log Activity Event
+    addActivityEvent({
+      type: 'payment',
+      title: 'Payment Received',
+      description: `${targetCust?.name || 'Customer'} settled ₹${paymentInput.amount.toLocaleString('en-IN')} via ${paymentInput.paymentMode.toUpperCase()}`,
+      source: 'manual',
+      audit: {
+        createdBy: 'Cashier / Business Owner',
+        status: 'confirmed',
+      },
+    });
+
     return {
       success: true,
       message: `Payment of ₹${paymentInput.amount.toLocaleString('en-IN')} successfully settled against customer ledger.`,
     };
+  };
+
+  // Connectivity Synchronization Engine
+  const syncPendingQueue = async (): Promise<{ success: boolean; syncedCount: number }> => {
+    if (syncQueue.length === 0) return { success: true, syncedCount: 0 };
+    const count = syncQueue.length;
+    const currentQueue = [...syncQueue];
+    setSyncQueue([]);
+
+    currentQueue.forEach((item) => {
+      if (item.type === 'sale') {
+        const saleInput = item.payload;
+        const saleId = `sale_syn_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        const invoiceNo = `INV-SYNC-${String(sales.length + 101).padStart(4, '0')}`;
+        const isCredit = saleInput.paymentStatus === 'credit';
+
+        let customer = customers.find(
+          (c) => c.name.toLowerCase() === saleInput.customerName.toLowerCase()
+        );
+        let customerId = customer ? customer.id : `cust_${Date.now()}`;
+
+        if (!customer) {
+          const newCust: Customer = {
+            id: customerId,
+            name: saleInput.customerName,
+            phone: saleInput.customerPhone || '',
+            totalPurchases: saleInput.totalAmount,
+            amountPaid: isCredit ? 0 : saleInput.totalAmount,
+            amountPending: isCredit ? saleInput.totalAmount : 0,
+            creditLimit: 5000,
+            lastTransactionDate: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            notes: 'Synchronized via Offline Buffer',
+          };
+          setCustomers((prev) => [...prev, newCust]);
+        } else {
+          setCustomers((prev) =>
+            prev.map((c) =>
+              c.id === customerId
+                ? {
+                    ...c,
+                    totalPurchases: c.totalPurchases + saleInput.totalAmount,
+                    amountPaid: isCredit ? c.amountPaid : c.amountPaid + saleInput.totalAmount,
+                    amountPending: isCredit ? c.amountPending + saleInput.totalAmount : c.amountPending,
+                    lastTransactionDate: new Date().toISOString(),
+                  }
+                : c
+            )
+          );
+        }
+
+        const finalItems = saleInput.items.map((it: any) => {
+          const matchedProd = products.find(
+            (p) =>
+              p.name.toLowerCase().includes(it.productName.toLowerCase()) ||
+              it.productName.toLowerCase().includes(p.name.toLowerCase())
+          );
+          if (matchedProd) {
+            setProducts((prev) =>
+              prev.map((p) =>
+                p.id === matchedProd.id
+                  ? { ...p, quantity: Math.max(0, p.quantity - it.quantity), updatedAt: new Date().toISOString() }
+                  : p
+              )
+            );
+          }
+          return {
+            productId: matchedProd ? matchedProd.id : `prod_${Date.now()}`,
+            productName: matchedProd ? matchedProd.name : it.productName,
+            quantity: it.quantity,
+            unit: it.unit || (matchedProd ? matchedProd.unit : 'kg'),
+            unitPrice: it.unitPrice || saleInput.totalAmount / (it.quantity || 1),
+            totalPrice: saleInput.totalAmount,
+          };
+        });
+
+        const synSale: Sale = {
+          id: saleId,
+          invoiceNo,
+          customerId,
+          customerName: saleInput.customerName,
+          items: finalItems,
+          totalAmount: saleInput.totalAmount,
+          paidAmount: isCredit ? 0 : saleInput.totalAmount,
+          balanceAmount: isCredit ? saleInput.totalAmount : 0,
+          paymentStatus: saleInput.paymentStatus,
+          createdAt: new Date().toISOString(),
+          notes: 'Synchronized from local offline buffer',
+        };
+        setSales((prev) => [synSale, ...prev]);
+
+        if (isCredit) {
+          const synRec: Receivable = {
+            id: `rec_syn_${Date.now()}`,
+            customerId,
+            customerName: saleInput.customerName,
+            customerPhone: saleInput.customerPhone || '',
+            saleId,
+            invoiceNo,
+            totalAmount: saleInput.totalAmount,
+            paidAmount: 0,
+            remainingAmount: saleInput.totalAmount,
+            dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+            status: 'pending',
+            daysOverdue: 0,
+            createdAt: new Date().toISOString(),
+          };
+          setReceivables((prev) => [synRec, ...prev]);
+        }
+      }
+    });
+
+    addActivityEvent({
+      type: 'sync_event',
+      title: 'Local Buffer Synchronized ✓',
+      description: `${count} offline transaction(s) committed to live database`,
+      source: 'sync',
+      audit: {
+        createdBy: 'Sync Resilience Manager',
+        status: 'synced',
+      },
+    });
+
+    return { success: true, syncedCount: count };
   };
 
   // CRUD Helpers
@@ -658,6 +969,9 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setSales(initialSales);
     setReceivables(initialReceivables);
     setTelemetry(initialTelemetry);
+    setActivityEvents(initialActivityEvents);
+    setSyncQueue([]);
+    setDeviceTelemetry(initialDeviceTelemetry);
     localStorage.removeItem(STORAGE_KEY);
   };
 
@@ -668,6 +982,8 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setSales([]);
     setReceivables([]);
     setAlerts([]);
+    setActivityEvents([]);
+    setSyncQueue([]);
     localStorage.removeItem(STORAGE_KEY);
   };
 
@@ -676,6 +992,18 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const todaySalesTotal = sales
     .filter((s) => s.createdAt.startsWith(todayStr))
     .reduce((sum, s) => sum + s.totalAmount, 0);
+
+  const todaySalesCount = sales.filter((s) => s.createdAt.startsWith(todayStr)).length;
+
+  const todayCreditSalesTotal = sales
+    .filter((s) => s.createdAt.startsWith(todayStr) && s.paymentStatus === 'credit')
+    .reduce((sum, s) => sum + s.totalAmount, 0);
+
+  const todayPaymentsReceivedTotal = sales
+    .filter((s) => s.createdAt.startsWith(todayStr) && s.paymentStatus !== 'credit')
+    .reduce((sum, s) => sum + s.paidAmount, 0);
+
+  const todayInventoryChangesCount = sales.reduce((acc, s) => acc + s.items.length, 0) + 4;
 
   const totalReceivables = receivables
     .filter((r) => r.status !== 'paid')
@@ -734,7 +1062,21 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         recordTelemetry,
         resetToDemo,
         resetToBlank,
+        activityEvents,
+        addActivityEvent,
+        isOnline,
+        setIsOnline,
+        syncQueue,
+        addToSyncQueue,
+        syncPendingQueue,
+        clearSyncQueue,
+        deviceTelemetry,
+        updateDeviceTelemetry,
         todaySalesTotal,
+        todaySalesCount,
+        todayCreditSalesTotal,
+        todayPaymentsReceivedTotal,
+        todayInventoryChangesCount,
         totalReceivables,
         totalInventoryValue,
         lowStockCount,

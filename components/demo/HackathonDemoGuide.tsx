@@ -10,6 +10,12 @@ import {
   ArrowRight,
   ExternalLink,
   RotateCcw,
+  Mic,
+  HelpCircle,
+  Truck,
+  IndianRupee,
+  Layers,
+  Cpu,
 } from 'lucide-react';
 import { useBusiness } from '@/context/BusinessContext';
 import { ActiveTab } from '../layout/Sidebar';
@@ -24,20 +30,54 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
   onRunVoiceSample,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeMode, setActiveMode] = useState<'FLOW' | 'PRESETS'>('FLOW');
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const { products, customers, sales, receivables, resetToDemo, t } = useBusiness();
 
-  // Find live dynamic values for the verification steps
-  const riceProduct = products.find((p) => p.name.toLowerCase().includes('rice'));
-  const rameshCustomer = customers.find((c) => c.name.toLowerCase().includes('ramesh'));
-  const rameshReceivable = receivables.find((r) => r.customerName.toLowerCase().includes('ramesh'));
+  // Presets from Section 23
+  const presets = [
+    {
+      id: 'p1',
+      title: 'Standard Credit Sale',
+      text: 'Ramesh ko 5 kilo chawal ₹600 mein udhaar diya.',
+      type: 'Sale',
+      description: 'Creates sale, updates rice stock, creates ₹600 receivable.',
+      badge: 'Hero Demo',
+    },
+    {
+      id: 'p2',
+      title: 'Uncertainty / Ambiguity Case',
+      text: 'Ramesh ko chawal diya.',
+      type: 'Ambiguity',
+      description: 'Triggers clarification question: "Which quantity should I record?".',
+      badge: 'Uncertainty State',
+    },
+    {
+      id: 'p3',
+      title: 'Restock Procurement Scenario',
+      text: '50 kilo cheeni khareedi ₹2,000 cash.',
+      type: 'Purchase',
+      description: 'Records supplier purchase and increments sugar stock.',
+      badge: 'Inventory Restock',
+    },
+    {
+      id: 'p4',
+      title: 'Payment Collection / Jama',
+      text: 'Suresh ne ₹1,000 cash jama kiya.',
+      type: 'Payment',
+      description: 'Records customer debt clearance and logs settlement.',
+      badge: 'Khata Settlement',
+    },
+  ];
 
-  const steps = [
+  // 60-Second Judge Demo Flow from Section 35
+  const flowSteps = [
     {
       num: 1,
-      title: t('demoGuide', 'step1Title', 'Inspect Kirana Dashboard'),
-      description: t('demoGuide', 'step1Desc', 'Observe live Today Sales, Udhar balance, and Inventory stock levels.'),
-      actionLabel: t('demoGuide', 'step1Action', 'Go to Dashboard'),
+      time: '00:00 - 00:10',
+      title: 'Business Pulse Dashboard',
+      description: 'Inspect live sales, real receivables, stock health, and event activity.',
+      actionLabel: 'Go to Dashboard',
       action: () => {
         setActiveTab('dashboard');
         toggleStep(1);
@@ -45,54 +85,56 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
     },
     {
       num: 2,
-      title: t('demoGuide', 'step2Title', 'Voice / NLP Sale Execution'),
-      description: t('demoGuide', 'step2Desc', 'Voice or text: "Ramesh ko 5 kilo rice 600 rupaye ka diya udhar".'),
-      actionLabel: t('demoGuide', 'step2Action', 'Trigger AI Assistant'),
+      time: '00:10 - 00:25',
+      title: 'Voice Transaction Hero',
+      description: 'Speak in Hindi/Punjabi/English: "Ramesh ko 5 kilo chawal ₹600 mein udhaar diya."',
+      actionLabel: 'Open Voice Center',
       action: () => {
-        setActiveTab('assistant');
-        onRunVoiceSample('Ramesh ko 5 kilo rice 600 rupaye ka diya udhar');
+        onRunVoiceSample('Ramesh ko 5 kilo chawal ₹600 mein udhaar diya.');
         toggleStep(2);
       },
     },
     {
       num: 3,
-      title: t('demoGuide', 'step3Title', 'Verify Inventory Decrement (Rice: 100kg → 95kg)'),
-      description: `${t('demoGuide', 'step3Desc', 'Current Rice Stock:')} ${riceProduct ? `${riceProduct.quantity} ${riceProduct.unit}` : '95 kg'}.`,
-      actionLabel: t('demoGuide', 'step3Action', 'Check Stock'),
+      time: '00:25 - 00:35',
+      title: 'Verification Screen',
+      description: 'Review structured customer, product, quantity, amount, and credit terms before confirming.',
+      actionLabel: 'Verify Review',
       action: () => {
-        setActiveTab('inventory');
+        setActiveTab('voice');
         toggleStep(3);
       },
     },
     {
       num: 4,
-      title: t('demoGuide', 'step4Title', 'Verify Udhar / Receivables Ledger (+₹600)'),
-      description: `${t('demoGuide', 'step4Desc', 'Ramesh pending balance:')} ₹${rameshCustomer?.amountPending.toLocaleString('en-IN') || 600}.`,
-      actionLabel: t('demoGuide', 'step4Action', 'Check Udhar'),
+      time: '00:35 - 00:45',
+      title: 'Cascade Execution & Khata',
+      description: 'Verify instant updates to Inventory (-5kg), Receivables (+₹600), and Customer profile.',
+      actionLabel: 'Check Customers & Khata',
       action: () => {
-        setActiveTab('receivables');
+        setActiveTab('customers');
         toggleStep(4);
       },
     },
     {
       num: 5,
-      title: t('demoGuide', 'step5Title', 'Ask AI: "Who owes me money?"'),
-      description: t('demoGuide', 'step5Desc', 'AI retrieves Ramesh & all indebted customers from bahi-khata.'),
-      actionLabel: t('demoGuide', 'step5Action', 'Run AI Query'),
+      time: '00:45 - 00:55',
+      title: 'Ask KINETIC Intelligence',
+      description: 'Structured answers to "Who still owes me money?" with WhatsApp reminder triggers.',
+      actionLabel: 'Ask KINETIC',
       action: () => {
-        setActiveTab('assistant');
-        onRunVoiceSample('Who owes me money?');
+        setActiveTab('ask');
         toggleStep(5);
       },
     },
     {
       num: 6,
-      title: t('demoGuide', 'step6Title', 'Ask AI: "Which products are running low?"'),
-      description: t('demoGuide', 'step6Desc', 'AI inspects database reorder levels and identifies low stock items.'),
-      actionLabel: t('demoGuide', 'step6Action', 'Run Stock Query'),
+      time: '00:55 - 01:05',
+      title: 'Sync Center & Hardware Terminal',
+      description: 'Demonstrate offline LocalStorage queue and KINETIC ESP32-S3 terminal concept.',
+      actionLabel: 'Open Sync Center',
       action: () => {
-        setActiveTab('assistant');
-        onRunVoiceSample('Which products are running low?');
+        setActiveTab('sync');
         toggleStep(6);
       },
     },
@@ -112,18 +154,18 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
         className="bg-earth-900 hover:bg-earth-800 text-white p-3 rounded-2xl shadow-rangoli-lg border border-rangoli-400 cursor-pointer flex items-center justify-between transition-all"
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-lg bg-rangoli-500 text-white flex items-center justify-center font-bold text-xs">
+          <div className="w-7 h-7 rounded-lg bg-rangoli-500 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
             🎯
           </div>
           <div>
             <div className="text-xs font-bold font-serif flex items-center gap-1.5">
-              <span>{t('demoGuide', 'demoScript', 'IIIT-Delhi Demo Script')}</span>
-              <span className="text-[10px] font-sans font-semibold px-1.5 py-0.2 rounded-full bg-rangoli-500 text-white">
-                PS #4
+              <span>KINETIC Demo Mode</span>
+              <span className="text-[9px] font-sans font-bold px-1.5 py-0.2 rounded-full bg-rangoli-500 text-white">
+                60s Flow
               </span>
             </div>
             <div className="text-[10px] text-earth-300">
-              {completedSteps.length} of {steps.length} {t('demoGuide', 'testStepsValidated', 'test steps validated')}
+              {completedSteps.length} of {flowSteps.length} demo stages validated
             </div>
           </div>
         </div>
@@ -131,68 +173,145 @@ export const HackathonDemoGuide: React.FC<HackathonDemoGuideProps> = ({
         {isOpen ? <ChevronDown className="w-4 h-4 text-earth-300" /> : <ChevronUp className="w-4 h-4 text-earth-300" />}
       </div>
 
-      {/* Expanded Step Guide */}
+      {/* Expanded Demo Modal */}
       {isOpen && (
-        <div className="mt-2 bg-white rounded-2xl border border-rangoli-300 shadow-rangoli-lg p-4 space-y-3 animate-in fade-in slide-in-from-bottom-2 text-xs max-h-[75vh] overflow-y-auto">
-          <div className="flex items-center justify-between border-b border-rangoli-100 pb-2">
-            <span className="font-bold text-earth-900 font-serif">
-              {t('demoGuide', 'demoFlowTitle', '3-Minute Hackathon Demo Flow')}
-            </span>
+        <div className="mt-2 bg-white rounded-2xl border border-rangoli-300 shadow-rangoli-lg p-4 space-y-3 animate-in fade-in slide-in-from-bottom-2 text-xs max-h-[80vh] overflow-y-auto">
+          
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-rangoli-100 pb-2.5">
+            <div>
+              <span className="font-bold text-earth-900 font-serif block">
+                Hackathon Presentation Mode
+              </span>
+              <span className="text-[10px] text-earth-500">
+                Core Loop: SPEAK → VERIFY → ACT → INSIGHT
+              </span>
+            </div>
             <button
               onClick={() => {
                 resetToDemo();
                 setCompletedSteps([]);
               }}
-              className="text-[11px] text-rangoli-600 hover:text-rangoli-800 font-semibold flex items-center gap-1"
+              className="text-[11px] text-rangoli-600 hover:text-rangoli-800 font-semibold flex items-center gap-1 px-2 py-1 rounded-lg bg-rangoli-50"
+              title="Reset all data to clean initial state"
             >
-              <RotateCcw className="w-3 h-3" /> {t('common', 'reset', 'Reset')}
+              <RotateCcw className="w-3 h-3" /> Reset Demo
             </button>
           </div>
 
-          <div className="space-y-2.5">
-            {steps.map((st) => {
-              const isDone = completedSteps.includes(st.num);
-              return (
-                <div
-                  key={st.num}
-                  className={`p-2.5 rounded-xl border transition-all ${
-                    isDone
-                      ? 'bg-emerald-50/70 border-emerald-300 text-emerald-950'
-                      : 'bg-ivory-50/80 border-rangoli-200 text-earth-800'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2">
-                      <button
-                        onClick={() => toggleStep(st.num)}
-                        className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold mt-0.5 ${
-                          isDone ? 'bg-success text-white' : 'border border-earth-300 text-earth-600'
-                        }`}
-                      >
-                        {isDone ? '✓' : st.num}
-                      </button>
-                      <div>
-                        <div className="font-bold text-xs text-earth-900">{st.title}</div>
-                        <div className="text-[11px] text-earth-600 mt-0.5 leading-snug">
-                          {st.description}
+          {/* Mode Switcher */}
+          <div className="flex rounded-xl bg-ivory-100 p-1 text-[11px] font-bold">
+            <button
+              onClick={() => setActiveMode('FLOW')}
+              className={`flex-1 py-1.5 rounded-lg transition-all ${
+                activeMode === 'FLOW'
+                  ? 'bg-white text-earth-900 shadow-2xs'
+                  : 'text-earth-600 hover:text-earth-900'
+              }`}
+            >
+              60s Judge Flow
+            </button>
+            <button
+              onClick={() => setActiveMode('PRESETS')}
+              className={`flex-1 py-1.5 rounded-lg transition-all ${
+                activeMode === 'PRESETS'
+                  ? 'bg-white text-earth-900 shadow-2xs'
+                  : 'text-earth-600 hover:text-earth-900'
+              }`}
+            >
+              Demo Presets (Sec 23)
+            </button>
+          </div>
+
+          {/* Mode 1: 60-Second Judge Flow */}
+          {activeMode === 'FLOW' && (
+            <div className="space-y-2">
+              {flowSteps.map((st) => {
+                const isDone = completedSteps.includes(st.num);
+                return (
+                  <div
+                    key={st.num}
+                    className={`p-2.5 rounded-xl border transition-all ${
+                      isDone
+                        ? 'bg-emerald-50/70 border-emerald-300 text-emerald-950'
+                        : 'bg-ivory-50/80 border-rangoli-200 text-earth-800'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2">
+                        <button
+                          onClick={() => toggleStep(st.num)}
+                          className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold mt-0.5 shrink-0 ${
+                            isDone ? 'bg-success text-white' : 'border border-earth-300 text-earth-600'
+                          }`}
+                        >
+                          {isDone ? '✓' : st.num}
+                        </button>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-xs text-earth-900">{st.title}</span>
+                            <span className="font-mono text-[9px] text-earth-400">{st.time}</span>
+                          </div>
+                          <div className="text-[11px] text-earth-600 mt-0.5 leading-snug">
+                            {st.description}
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    <div className="mt-2 pt-1.5 border-t border-earth-100/60 flex justify-end">
+                      <button
+                        onClick={st.action}
+                        className="px-2.5 py-1 rounded-lg bg-rangoli-500 hover:bg-rangoli-600 text-white text-[11px] font-bold shadow-2xs flex items-center gap-1 transition-all active:scale-95"
+                      >
+                        <PlayCircle className="w-3 h-3" />
+                        <span>{st.actionLabel}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Mode 2: Presets (Section 23) */}
+          {activeMode === 'PRESETS' && (
+            <div className="space-y-2">
+              {presets.map((pr) => (
+                <div
+                  key={pr.id}
+                  className="p-3 rounded-xl bg-ivory-50/80 border border-rangoli-200 space-y-1.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-earth-900">{pr.title}</span>
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rangoli-100 text-rangoli-800 border border-rangoli-200">
+                      {pr.badge}
+                    </span>
                   </div>
 
-                  <div className="mt-2 pt-1.5 border-t border-earth-100/60 flex justify-end">
+                  <p className="text-[11px] font-serif italic text-rangoli-900 bg-white/80 p-2 rounded-lg border border-rangoli-100">
+                    "{pr.text}"
+                  </p>
+
+                  <p className="text-[10px] text-earth-500">
+                    {pr.description}
+                  </p>
+
+                  <div className="pt-1 flex justify-end">
                     <button
-                      onClick={st.action}
-                      className="px-2.5 py-1 rounded-lg bg-rangoli-500 hover:bg-rangoli-600 text-white text-[11px] font-bold shadow-2xs flex items-center gap-1 transition-all active:scale-95"
+                      onClick={() => {
+                        onRunVoiceSample(pr.text);
+                      }}
+                      className="px-3 py-1 rounded-lg bg-rangoli-500 hover:bg-rangoli-600 text-white text-[11px] font-bold shadow-2xs flex items-center gap-1.5 transition-all"
                     >
-                      <PlayCircle className="w-3 h-3" />
-                      <span>{st.actionLabel}</span>
+                      <Mic className="w-3 h-3" />
+                      <span>Run Preset</span>
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -18,6 +18,8 @@ import {
   RotateCcw,
   Zap,
   Globe,
+  Mic,
+  Cpu,
 } from 'lucide-react';
 import { RangoliCore, RangoliCorner } from '@/components/rangoli/RangoliMotif';
 import { useBusiness } from '@/context/BusinessContext';
@@ -25,17 +27,21 @@ import { getLocaleConfig } from '@/lib/i18n/locales.config';
 
 export type ActiveTab =
   | 'dashboard'
-  | 'assistant'
+  | 'voice'
+  | 'ask'
   | 'sales'
-  | 'purchases'
   | 'inventory'
   | 'customers'
   | 'receivables'
-  | 'analytics'
   | 'insights'
+  | 'sync'
+  | 'device'
+  | 'settings'
+  | 'assistant'
+  | 'purchases'
+  | 'analytics'
   | 'alerts'
-  | 'documents'
-  | 'settings';
+  | 'documents';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -73,17 +79,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const navItems: NavItem[] = [
     { id: 'dashboard', label: t('nav', 'dashboard', 'Dashboard'), icon: LayoutDashboard },
-    { id: 'assistant', label: t('nav', 'assistant', 'AI Assistant'), icon: Sparkles, highlight: true },
-    { id: 'sales', label: t('nav', 'sales', 'Sales & Invoices'), icon: ShoppingBag },
-    { id: 'purchases', label: t('nav', 'purchases', 'Purchases / Mal'), icon: Truck },
-    { id: 'inventory', label: t('nav', 'inventory', 'Inventory (Stock)'), icon: PackageSearch },
-    { id: 'customers', label: t('nav', 'customers', 'Customers & Khata'), icon: Users },
-    { id: 'receivables', label: t('nav', 'receivables', 'Udhar / Receivables'), icon: WalletCards },
-    { id: 'analytics', label: t('nav', 'analytics', 'Analytics'), icon: TrendingUp },
-    { id: 'insights', label: t('nav', 'insights', 'AI Insights'), icon: Lightbulb },
-    { id: 'alerts', label: t('nav', 'alerts', 'Alerts'), icon: Bell, badge: activeAlertsCount },
-    { id: 'documents', label: t('nav', 'documents', 'Bills & Documents'), icon: FileText },
-    { id: 'settings', label: t('nav', 'settings', 'Settings & Language'), icon: Settings },
+    { id: 'voice', label: 'Voice Transactions', icon: Mic, highlight: true },
+    { id: 'ask', label: 'Ask KINETIC', icon: Sparkles },
+    { id: 'sales', label: t('nav', 'sales', 'Sales'), icon: ShoppingBag },
+    { id: 'inventory', label: t('nav', 'inventory', 'Inventory'), icon: PackageSearch },
+    { id: 'customers', label: t('nav', 'customers', 'Customers'), icon: Users },
+    { id: 'receivables', label: t('nav', 'receivables', 'Receivables'), icon: WalletCards },
+    { id: 'insights', label: t('nav', 'insights', 'Insights'), icon: Lightbulb },
+    { id: 'sync', label: 'Sync Center', icon: RotateCcw },
+    { id: 'device', label: 'Device', icon: Cpu },
+    { id: 'settings', label: t('nav', 'settings', 'Settings'), icon: Settings },
   ];
 
   const handleSelect = (tab: ActiveTab) => {
