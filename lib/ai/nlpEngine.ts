@@ -159,14 +159,19 @@ export function parseBusinessIntent(
 
   // --- ENTITY EXTRACTION LOGIC ---
 
-  // A. Customer Extraction
-  // Look for existing customers first
-  for (const cust of existingCustomers) {
+  // A. Customer Extraction & Ambiguity Resolution (Section 16)
+  const matchingCustomers = existingCustomers.filter(cust => {
     const custFirst = cust.name.split(' ')[0].toLowerCase();
-    if (lower.includes(custFirst)) {
-      extracted.customerName = cust.name;
-      break;
-    }
+    return lower.includes(custFirst);
+  });
+
+  if (matchingCustomers.length > 1) {
+    extracted.customerCandidates = matchingCustomers.map(c => c.name);
+    extracted.customerName = matchingCustomers[0].name;
+    isAmbiguous = true;
+    missingFields.push(`Multiple customers found matching ("${matchingCustomers.map(c => c.name).join('", "')}")`);
+  } else if (matchingCustomers.length === 1) {
+    extracted.customerName = matchingCustomers[0].name;
   }
 
   // If not matched from catalog, extract from phrasing: "X ko", "to X", "X ne"
@@ -185,24 +190,89 @@ export function parseBusinessIntent(
     }
   }
 
-  // B. Product Extraction
-  // Check known keywords
-  for (const [kw, details] of Object.entries(PRODUCT_KEYWORDS)) {
-    const regex = new RegExp(`\\b${kw}\\b`, 'i');
-    if (regex.test(lower)) {
-      // Find matching product in existing catalog if exists
-      const match = existingProducts.find(p => 
-        p.name.toLowerCase().includes(kw) || 
-        (p.nameHindi && p.nameHindi.toLowerCase().includes(kw)) ||
-        p.name === details.standardName
-      );
-      extracted.productName = match ? match.name : details.standardName;
-      if (!extracted.unit) extracted.unit = details.defaultUnit;
-      break;
+  // B. Multi-Item Cart Extraction (Section 17)
+  const multiItems: Array<{ productName: string; quantity: number; unit: string; unitPrice?: number; totalPrice?: number }> = [];
+  const segments = text.split(/(?:,|\s+aur\s+|\s+and\s+|\s+tatha\s+|\s+&\s+)/i);
+
+  for (const seg of segments) {
+    const sLower = seg.toLowerCase();
+    const segQtyMatch = seg.match(/(\d+(?:\.\d+)?)\s*(kilo|kg|packet|pack|litre|liter|ltr|gm|g|pcs|piece|pieces|sack|bora)?/i);
+    if (!segQtyMatch) continue;
+
+    const qty = parseFloat(segQtyMatch[1]);
+    let unit = 'kg';
+    if (segQtyMatch[2]) {
+      const u = segQtyMatch[2].toLowerCase();
+      if (u.startsWith('kilo') || u === 'kg') unit = 'kg';
+      else if (u.startsWith('pack')) unit = 'packet';
+      else if (u.startsWith('lit') || u === 'ltr') unit = 'litre';
+      else if (u.startsWith('piec') || u === 'pcs') unit = 'pcs';
+      else if (u.startsWith('sack') || u === 'bora') unit = 'sack';
+      else unit = u;
+    }
+
+    let matchedName = '';
+    let approxPrice = 0;
+
+    for (const [kw, details] of Object.entries(PRODUCT_KEYWORDS)) {
+      if (new RegExp(`\\b${kw}\\b`, 'i').test(sLower)) {
+        const prod = existingProducts.find(p =>
+          p.name.toLowerCase().includes(kw) ||
+          (p.nameHindi && p.nameHindi.toLowerCase().includes(kw))
+        );
+        matchedName = prod ? prod.name : details.standardName;
+        approxPrice = prod ? prod.sellingPrice : details.approxPrice;
+        if (!segQtyMatch[2]) unit = details.defaultUnit;
+        break;
+      }
+    }
+
+    if (!matchedName) {
+      for (const prod of existingProducts) {
+        const pWords = prod.name.toLowerCase().split(' ');
+        if (pWords.some(w => w.length > 3 && sLower.includes(w))) {
+          matchedName = prod.name;
+          approxPrice = prod.sellingPrice;
+          if (!segQtyMatch[2]) unit = prod.unit;
+          break;
+        }
+      }
+    }
+
+    if (matchedName) {
+      multiItems.push({
+        productName: matchedName,
+        quantity: qty,
+        unit,
+        unitPrice: approxPrice,
+        totalPrice: Math.round(qty * approxPrice),
+      });
     }
   }
 
-  // Also check existing product catalog names directly
+  if (multiItems.length > 0) {
+    extracted.items = multiItems;
+    extracted.productName = multiItems[0].productName;
+    extracted.quantity = multiItems[0].quantity;
+    extracted.unit = multiItems[0].unit;
+  }
+
+  // Fallback Single-Item extraction if multi-item parser found none
+  if (!extracted.productName) {
+    for (const [kw, details] of Object.entries(PRODUCT_KEYWORDS)) {
+      if (new RegExp(`\\b${kw}\\b`, 'i').test(lower)) {
+        const match = existingProducts.find(p => 
+          p.name.toLowerCase().includes(kw) || 
+          (p.nameHindi && p.nameHindi.toLowerCase().includes(kw)) ||
+          p.name === details.standardName
+        );
+        extracted.productName = match ? match.name : details.standardName;
+        if (!extracted.unit) extracted.unit = details.defaultUnit;
+        break;
+      }
+    }
+  }
+
   if (!extracted.productName) {
     for (const prod of existingProducts) {
       const pNameLower = prod.name.toLowerCase();
@@ -215,19 +285,20 @@ export function parseBusinessIntent(
     }
   }
 
-  // C. Quantity & Unit Extraction
-  // e.g. "5 kilo", "5kg", "5 kg", "2 packet", "10 litre", "50 gm", "20 units"
-  const qtyMatch = text.match(/(\d+(?:\.\d+)?)\s*(kilo|kg|packet|pack|litre|liter|ltr|gm|g|pcs|piece|pieces|sack|kori|units?|bora)?/i);
-  if (qtyMatch) {
-    extracted.quantity = parseFloat(qtyMatch[1]);
-    if (qtyMatch[2]) {
-      const u = qtyMatch[2].toLowerCase();
-      if (u.startsWith('kilo') || u === 'kg') extracted.unit = 'kg';
-      else if (u.startsWith('pack')) extracted.unit = 'packet';
-      else if (u.startsWith('lit') || u === 'ltr') extracted.unit = 'litre';
-      else if (u.startsWith('piec') || u === 'pcs' || u.startsWith('unit')) extracted.unit = 'pcs';
-      else if (u.startsWith('sack') || u === 'bora') extracted.unit = 'sack';
-      else extracted.unit = u;
+  // C. Quantity & Unit Extraction (fallback if not in items)
+  if (!extracted.quantity) {
+    const qtyMatch = text.match(/(\d+(?:\.\d+)?)\s*(kilo|kg|packet|pack|litre|liter|ltr|gm|g|pcs|piece|pieces|sack|kori|units?|bora)?/i);
+    if (qtyMatch) {
+      extracted.quantity = parseFloat(qtyMatch[1]);
+      if (qtyMatch[2]) {
+        const u = qtyMatch[2].toLowerCase();
+        if (u.startsWith('kilo') || u === 'kg') extracted.unit = 'kg';
+        else if (u.startsWith('pack')) extracted.unit = 'packet';
+        else if (u.startsWith('lit') || u === 'ltr') extracted.unit = 'litre';
+        else if (u.startsWith('piec') || u === 'pcs' || u.startsWith('unit')) extracted.unit = 'pcs';
+        else if (u.startsWith('sack') || u === 'bora') extracted.unit = 'sack';
+        else extracted.unit = u;
+      }
     }
   }
 

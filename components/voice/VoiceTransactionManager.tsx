@@ -90,6 +90,11 @@ export const VoiceTransactionManager: React.FC<VoiceTransactionManagerProps> = (
 
   const [clarificationQuestion, setClarificationQuestion] = useState<string | null>(null);
   const [missingField, setMissingField] = useState<string | null>(null);
+  const [customerCandidates, setCustomerCandidates] = useState<string[]>([]);
+  const [multiItems, setMultiItems] = useState<
+    Array<{ productName: string; quantity: number; unit: string; amount?: number }>
+  >([]);
+  const [unknownProductAlert, setUnknownProductAlert] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [lastExecutedSummary, setLastExecutedSummary] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -159,6 +164,25 @@ export const VoiceTransactionManager: React.FC<VoiceTransactionManagerProps> = (
 
     const ent = nlpRes.extractedEntities;
 
+    // Check for customer ambiguity
+    if (nlpRes.missingFields.includes('customer_selection') || (ent.customerCandidates && ent.customerCandidates.length > 1)) {
+      setCustomerCandidates(ent.customerCandidates || []);
+      setClarificationQuestion(nlpRes.suggestedResponse || `Multiple customers matched "${ent.customerName}". Which customer would you like to select?`);
+      setMissingField('customer_selection');
+      setExtractedEntities({
+        customerName: ent.customerName || '',
+        productName: ent.productName || 'Basmati Rice Premium',
+        quantity: ent.quantity || 1,
+        unit: ent.unit || 'kg',
+        amount: ent.amount || 600,
+        paymentStatus: ent.paymentStatus || 'credit',
+        notes: text,
+      });
+      setVoiceState('NEEDS_CLARIFICATION');
+      speakResponse(`Multiple customers matched ${ent.customerName}. Which customer would you like to select?`);
+      return;
+    }
+
     // Check for ambiguity or missing essential fields for SALE
     if (!ent.quantity || ent.quantity <= 0) {
       setClarificationQuestion('Which quantity should I record? (e.g. 5 kg or 10 kg)');
@@ -202,6 +226,22 @@ export const VoiceTransactionManager: React.FC<VoiceTransactionManagerProps> = (
     const resolvedAmt = ent.amount || 600;
     const resolvedPayment = ent.paymentStatus || 'credit';
 
+    if (ent.unknownProductMentioned) {
+      setUnknownProductAlert(resolvedProduct);
+    } else {
+      setUnknownProductAlert(null);
+    }
+
+    const itemsList = ent.items && ent.items.length > 0 ? ent.items : [
+      {
+        productName: resolvedProduct,
+        quantity: resolvedQty,
+        unit: resolvedUnit,
+        amount: resolvedAmt,
+      }
+    ];
+    setMultiItems(itemsList);
+
     setExtractedEntities({
       customerName: resolvedCustomer,
       productName: resolvedProduct,
@@ -212,14 +252,18 @@ export const VoiceTransactionManager: React.FC<VoiceTransactionManagerProps> = (
       notes: `Recorded via KINETIC Voice Terminal: "${text}"`,
     });
 
+    const itemsSummary = itemsList.length > 1
+      ? itemsList.map((i) => `${i.quantity} ${i.unit} ${i.productName}`).join(', ')
+      : `${resolvedQty} ${resolvedUnit} of ${resolvedProduct}`;
+
     setEnglishInterpretation(
-      `Sold ${resolvedQty} ${resolvedUnit} of ${resolvedProduct} to ${resolvedCustomer} for ₹${resolvedAmt} (${resolvedPayment === 'credit' ? 'Udhar / Credit' : 'Cash Paid'}).`
+      `Sold ${itemsSummary} to ${resolvedCustomer} for ₹${resolvedAmt} (${resolvedPayment === 'credit' ? 'Udhar / Credit' : 'Cash Paid'}).`
     );
 
     // Transition to Human-in-the-loop verification
     await new Promise((r) => setTimeout(r, 300));
     setVoiceState('CONFIRMATION');
-    speakResponse(`Understood. ${resolvedCustomer}, ${resolvedQty} ${resolvedUnit} ${resolvedProduct}, ₹${resolvedAmt}. Please verify and confirm.`);
+    speakResponse(`Understood. ${resolvedCustomer}, ${itemsSummary}, ₹${resolvedAmt}. Please verify and confirm.`);
   };
 
   // Provide preset test utterances for quick demo
@@ -236,24 +280,34 @@ export const VoiceTransactionManager: React.FC<VoiceTransactionManagerProps> = (
       return;
     }
 
+    const saleItems = multiItems.length > 0
+      ? multiItems.map((it) => ({
+          productName: it.productName,
+          quantity: it.quantity,
+          unit: it.unit || 'unit',
+          unitPrice: (it.amount || (extractedEntities.amount / multiItems.length)) / (it.quantity || 1),
+        }))
+      : [
+          {
+            productName: extractedEntities.productName,
+            quantity: extractedEntities.quantity,
+            unit: extractedEntities.unit,
+            unitPrice: extractedEntities.amount / (extractedEntities.quantity || 1),
+          },
+        ];
+
     const res = recordSale({
       customerName: extractedEntities.customerName,
-      items: [
-        {
-          productName: extractedEntities.productName,
-          quantity: extractedEntities.quantity,
-          unit: extractedEntities.unit,
-          unitPrice: extractedEntities.amount / (extractedEntities.quantity || 1),
-        },
-      ],
+      items: saleItems,
       totalAmount: extractedEntities.amount,
       paymentStatus: extractedEntities.paymentStatus,
       notes: extractedEntities.notes || 'Voice Transaction Confirmed',
     });
 
     if (res.success) {
+      const itemsText = saleItems.map((i) => `${i.productName} (${i.quantity} ${i.unit})`).join(' + ');
       setLastExecutedSummary(
-        `${extractedEntities.customerName} → ${extractedEntities.productName} (${extractedEntities.quantity} ${extractedEntities.unit}) → ₹${extractedEntities.amount} (${extractedEntities.paymentStatus.toUpperCase()})`
+        `${extractedEntities.customerName} → ${itemsText} → ₹${extractedEntities.amount} (${extractedEntities.paymentStatus.toUpperCase()})`
       );
       setVoiceState('SUCCESS');
       speakResponse('Transaction verified and successfully recorded in business ledger.');
@@ -493,6 +547,36 @@ export const VoiceTransactionManager: React.FC<VoiceTransactionManagerProps> = (
                   "Ramesh ko chawal diya." (Missing qty & amount)
                 </div>
               </button>
+
+              <button
+                onClick={() =>
+                  handleQuickDemo('5 kilo chawal aur 2 packet doodh aur 1 litre tel 750 rupaye mein Ramesh ko becha.')
+                }
+                className="p-3 rounded-xl border border-purple-200 bg-purple-50/50 hover:bg-purple-100/60 hover:border-purple-400 text-left transition-all group"
+              >
+                <div className="font-bold text-purple-900 flex items-center justify-between">
+                  <span>Scenario 5: Multi-Item Spoken Cart</span>
+                  <ArrowRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-purple-700" />
+                </div>
+                <div className="text-[11px] text-purple-800/80 mt-0.5">
+                  "5 kg chawal, 2 packet doodh, 1 litre tel ₹750"
+                </div>
+              </button>
+
+              <button
+                onClick={() =>
+                  handleQuickDemo('Ramesh ko 10 kilo chawal 800 rupaye udhar diya.')
+                }
+                className="p-3 rounded-xl border border-blue-200 bg-blue-50/50 hover:bg-blue-100/60 hover:border-blue-400 text-left transition-all group"
+              >
+                <div className="font-bold text-blue-900 flex items-center justify-between">
+                  <span>Scenario 6: Customer Disambiguation</span>
+                  <ArrowRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-blue-700" />
+                </div>
+                <div className="text-[11px] text-blue-800/80 mt-0.5">
+                  Select between Ramesh Verma / Ramesh Sharma
+                </div>
+              </button>
             </div>
           </div>
         )}
@@ -568,6 +652,37 @@ export const VoiceTransactionManager: React.FC<VoiceTransactionManagerProps> = (
                       ₹{a}
                     </button>
                   ))}
+                </div>
+              )}
+
+              {missingField === 'customer_selection' && customerCandidates.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mt-4">
+                  {customerCandidates.map((cand) => (
+                    <button
+                      key={cand}
+                      onClick={() => {
+                        setExtractedEntities((prev) => ({
+                          ...prev,
+                          customerName: cand,
+                        }));
+                        setCustomerCandidates([]);
+                        setMissingField(null);
+                        setClarificationQuestion(null);
+                        setVoiceState('CONFIRMATION');
+                        speakResponse(`Customer selected: ${cand}. Please verify details.`);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-white border border-orange-300 hover:bg-orange-500 hover:text-white text-xs font-bold text-orange-900 transition-all shadow-2xs flex items-center gap-1.5"
+                    >
+                      <User className="w-3.5 h-3.5 text-orange-600" />
+                      <span>{cand}</span>
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-4 py-2 rounded-xl bg-orange-200/70 hover:bg-orange-300 text-xs font-bold text-orange-900 transition-all"
+                  >
+                    Enter custom customer...
+                  </button>
                 </div>
               )}
             </div>
@@ -668,6 +783,51 @@ export const VoiceTransactionManager: React.FC<VoiceTransactionManagerProps> = (
               </div>
             </div>
           </div>
+
+          {/* Spoken Multi-Item Cart Breakdown Table */}
+          {multiItems.length > 1 && (
+            <div className="mb-6 p-4 rounded-2xl bg-ivory-50 border border-rangoli-200/90 shadow-2xs">
+              <div className="flex items-center justify-between text-xs font-bold text-earth-800 uppercase tracking-wider mb-2.5 pb-2 border-b border-rangoli-200/70">
+                <span className="flex items-center gap-1.5">
+                  <Package className="w-4 h-4 text-rangoli-600" />
+                  Spoken Multi-Item Cart ({multiItems.length} Products Resolved)
+                </span>
+                <span className="text-rangoli-700 font-mono text-xs">Total: ₹{extractedEntities.amount.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="divide-y divide-rangoli-100 text-xs">
+                {multiItems.map((item, idx) => (
+                  <div key={idx} className="py-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-rangoli-100 text-rangoli-800 font-bold flex items-center justify-center text-[10px]">
+                        {idx + 1}
+                      </span>
+                      <span className="font-semibold text-earth-900">{item.productName}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="font-mono text-earth-600 bg-white px-2 py-0.5 rounded border border-earth-200">
+                        {item.quantity} {item.unit}
+                      </span>
+                      {item.amount && (
+                        <span className="font-mono text-earth-800 font-bold">
+                          ₹{item.amount.toLocaleString('en-IN')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Unknown Item Cataloging Notice */}
+          {unknownProductAlert && (
+            <div className="mb-6 p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-800 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>
+                <strong>Smart Catalog Expansion:</strong> "{unknownProductAlert}" was not in existing inventory and will be automatically registered in your business catalog upon confirmation.
+              </span>
+            </div>
+          )}
 
           {/* Inline Edit Form when User clicks [ Edit ] */}
           {isEditing && (

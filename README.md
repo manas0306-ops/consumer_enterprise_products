@@ -111,15 +111,63 @@ Built on a visual language inspired by Indian rangoli (radial symmetry, floral g
                        [EDIT] ◄──────┴──────► [CONFIRM]
                                                  │
                                                  ▼
-                        ATOMIC BUSINESS ENGINE (RPC)
+                        ATOMIC BUSINESS ENGINE (API / RPC)
             ┌────────────────────────────────────────────────────────┐
-            │ 1. Resolve Customer & Alias (pg_trgm fuzzy match)      │
-            │ 2. Deduct Inventory & write inventory_movements        │
-            │ 3. Create Udhar Receivable (Aging: Current 0-30d)      │
-            │ 4. Write Language Metadata (original/translated/en)    │
-            │ 5. Trigger 8-Second Undo Grace Window                  │
+            │ 1. Idempotency Key Validation (sync_queue deduplication│
+            │ 2. Resolve Customer (Exact / Fuzzy match / Disambiguate│
+            │ 3. Atomic Inventory Deduction & Stock Movement Logging │
+            │ 4. Settle / Create Bahi-Khata Udhar Receivables        │
+            │ 5. Audit Trail & Real-Time Business Pulse Recalculation│
+            │ 6. Trigger 8-Second Undo Grace Window                  │
             └────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+               SUPABASE POSTGRESQL MULTI-TENANT PERSISTENCE
+          (Row Level Security isolating data across business_id)
 ```
+
+---
+
+## 🗄️ Database Schema & Supabase Multi-Tenancy
+
+KINETIC connects to a production-grade relational PostgreSQL backend via Supabase with **Row-Level Security (RLS)** ensuring multi-tenant data isolation.
+
+### 16 Core Relational Tables (`lib/supabase/schema.sql`):
+1. **`businesses`**: Core tenant profiles, store configuration, currency, and default locale.
+2. **`profiles`**: Store owner and staff authentication metadata linked to Supabase Auth.
+3. **`business_members`**: RBAC permissions (`owner`, `cashier`, `accountant`).
+4. **`products`**: Inventory catalog with SKUs, barcode tracking, cost/selling price, and minimum reorder levels.
+5. **`inventory_movements`**: Immutable stock movement audit ledger (`sale`, `purchase`, `return`, `adjustment`).
+6. **`customers`**: Customer profiles, credit limits, phone numbers, total purchases, and outstanding khata balance.
+7. **`suppliers`**: Vendor registry and procurement tracking.
+8. **`sales`**: Invoices and sales register (cash, UPI, udhar/credit).
+9. **`sale_items`**: Line items per sale with unit pricing and quantities.
+10. **`purchases`**: Inward procurement orders from suppliers.
+11. **`purchase_items`**: Procurement line items.
+12. **`receivables`**: Khata debt ledger tracking due dates, aging, and status (`pending`, `partially_paid`, `paid`, `overdue`).
+13. **`payments`**: Payment settlement records (Cash, UPI, Bank Transfer) updating receivables via FIFO.
+14. **`activity_logs`**: Chronological business operations timeline.
+15. **`sync_queue`**: Offline transaction queue with idempotency keys for network resilience.
+16. **`ai_queries`**: Audit logs for conversational queries and tool invocations.
+
+---
+
+## 🔐 Authentication & Access Control
+
+- **Sign In (`/login`)**: Split-screen design featuring the Rangoli motif, password visibility toggle, session persistence, and instant demo mode bypass for evaluators.
+- **Registration (`/register`)**: Self-serve MSME onboarding collecting Store Name, Owner Name, Business Category, and credentials, automatically provisioning business tenancy and RLS policies.
+- **Demo Mode**: One-click bypass pre-loading a realistic Indian Kirana store (*Sharma Kirana Store*) with complete inventory, customer ledgers, and transactions.
+
+---
+
+## 🔌 Connected REST API Endpoints
+
+- `POST /api/sales`: Atomic sale creation with inventory deduction and receivable logging.
+- `POST /api/payments`: Khata debt settlement with automatic FIFO receivable allocation.
+- `POST /api/purchases`: Stock procurement and inventory replenishment.
+- `GET /api/dashboard`: Aggregated metrics for Business Pulse (Today's Sales, Receivables, Stock Alerts).
+- `POST /api/ai/query`: Grounded tools for Ask KINETIC (`WHO_OWES_MONEY`, `RUNNING_LOW`, `TODAY_SALES`).
+- `POST /api/sync`: Batch offline synchronization with idempotency protection.
 
 ---
 
@@ -150,7 +198,7 @@ npm install
 # Start local Next.js development server
 npm run dev
 
-# Build static production bundle
+# Build production bundle
 npm run build
 ```
 
@@ -158,5 +206,7 @@ npm run build
 
 ## 👥 Author & Hackathon Submission
 - **Author**: Maanas Pandey ([@manas0306-ops](https://github.com/manas0306-ops))
+- **Email**: krishnamanas1224@gmail.com
 - **Event**: IndustrySolve Hackathon 2026 | IIIT Delhi
 - **Track**: Problem Statement #4: AI-Powered Consumer & Enterprise Products
+

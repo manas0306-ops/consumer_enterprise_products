@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   Sparkles,
   ArrowRight,
@@ -10,6 +11,8 @@ import {
   Store,
   ChevronRight,
   Languages,
+  Database,
+  Lock,
 } from 'lucide-react';
 import { RangoliEmblem, RangoliBackground, RangoliCorner, RangoliDivider } from '@/components/rangoli/RangoliMotif';
 import { useBusiness } from '@/context/BusinessContext';
@@ -39,7 +42,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
       <RangoliBackground opacity={0.18} />
 
       {/* Header */}
-      <header className="relative z-10 p-6 max-w-7xl mx-auto w-full flex items-center justify-between">
+      <header className="relative z-10 p-4 sm:p-6 max-w-7xl mx-auto w-full flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white border border-rangoli-300 shadow-sm flex items-center justify-center p-1.5">
             <RangoliEmblem size={28} />
@@ -54,16 +57,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-semibold text-earth-600">
-          <span className="hidden sm:inline">IIIT Delhi Hackathon 2026 • Problem Statement #4</span>
+        <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold text-earth-600">
+          <Link
+            href="/login"
+            className="px-3.5 py-1.5 rounded-full bg-white/90 hover:bg-white border border-rangoli-300 text-rangoli-800 font-bold transition-all shadow-xs flex items-center gap-1.5"
+          >
+            <Lock className="w-3.5 h-3.5 text-rangoli-600" />
+            <span>Sign In</span>
+          </Link>
+          <Link
+            href="/register"
+            className="hidden sm:inline-flex px-3.5 py-1.5 rounded-full bg-white/90 hover:bg-white border border-rangoli-300 text-earth-800 font-bold transition-all shadow-xs"
+          >
+            Register MSME
+          </Link>
           <button
             onClick={() => {
               resetToDemo();
               onEnterApp();
             }}
-            className="px-3.5 py-1.5 rounded-full bg-rangoli-500 hover:bg-rangoli-600 text-white font-bold transition-all shadow-sm active:scale-95"
+            className="px-4 py-1.5 rounded-full bg-rangoli-500 hover:bg-rangoli-600 text-white font-bold transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
           >
-            {t('landing', 'launchDemo', 'Launch Demo')}
+            <Zap className="w-3.5 h-3.5 text-amber-200" />
+            <span>{t('landing', 'launchDemo', 'Demo Mode')}</span>
           </button>
         </div>
       </header>

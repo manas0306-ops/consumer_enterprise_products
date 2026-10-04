@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import {
   Menu,
   Sparkles,
@@ -11,6 +12,8 @@ import {
   Globe,
   RotateCcw,
   Mic,
+  Lock,
+  LogOut,
 } from 'lucide-react';
 import { useBusiness } from '@/context/BusinessContext';
 import { ActiveTab } from './Sidebar';
@@ -42,6 +45,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     setIsLanguageModalOpen,
     canUndo,
     undoLastTransaction,
+    user,
+    isDemoMode,
+    logout,
     t,
   } = useBusiness();
 
@@ -93,7 +99,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex items-center gap-2 text-xs text-earth-600 mt-0.5">
               <span className="font-semibold text-rangoli-700">{business.name}</span>
               <span>•</span>
-              <span className="text-earth-500 hidden sm:inline">IIIT Delhi Hackathon 2026</span>
+              {isDemoMode ? (
+                <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md border border-amber-300">
+                  Demo Mode
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md border border-emerald-300">
+                  PostgreSQL Cloud
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -184,6 +198,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             )}
           </button>
+
+          {/* User Account / Session Pill */}
+          {user && !isDemoMode ? (
+            <button
+              onClick={() => logout()}
+              className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-rangoli-200 bg-white hover:bg-rangoli-50 text-xs font-semibold text-earth-700 transition-colors flex items-center gap-1.5 shadow-xs"
+              title={`Logged in as ${user.email}. Click to sign out.`}
+            >
+              <div className="w-5 h-5 rounded-full bg-rangoli-500 text-white font-bold text-[10px] flex items-center justify-center">
+                {user.fullName ? user.fullName[0].toUpperCase() : 'U'}
+              </div>
+              <span className="hidden lg:inline">{user.fullName || user.email.split('@')[0]}</span>
+              <LogOut className="w-3 h-3 text-earth-400 hover:text-earth-700 ml-0.5" />
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="px-2.5 py-1.5 rounded-lg border border-rangoli-300 bg-white hover:bg-rangoli-50 text-xs font-bold text-rangoli-700 transition-colors flex items-center gap-1 shadow-xs"
+              title="Sign in with Cloud PostgreSQL database"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sign In</span>
+            </Link>
+          )}
         </div>
       </div>
     </header>

@@ -31,8 +31,34 @@ import {
 import { getLocaleConfig } from '@/lib/i18n/locales.config';
 import { translate, TranslationNamespace } from '@/lib/i18n/translations';
 import { CalendarSystem } from '@/lib/i18n/formatters';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  fullName?: string;
+}
 
 interface BusinessContextType {
+  // Supabase Auth & Multi-Tenancy
+  user: AuthUser | null;
+  session: any | null;
+  businessId: string | null;
+  userRole: 'owner' | 'cashier' | 'accountant';
+  isDemoMode: boolean;
+  isLoadingAuth: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (data: {
+    fullName: string;
+    businessName: string;
+    email: string;
+    password: string;
+    phone?: string;
+    businessType?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  enterDemoMode: () => void;
+
   business: Business;
   products: Product[];
   customers: Customer[];
@@ -135,6 +161,18 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [telemetry, setTelemetry] = useState<ModelTelemetry>(initialTelemetry);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  // Supabase Auth & Multi-Tenancy State
+  const [user, setUser] = useState<AuthUser | null>({
+    id: 'demo-user-001',
+    email: 'sharma@kirana-delhi.in',
+    fullName: 'Ramesh Sharma',
+  });
+  const [session, setSession] = useState<any | null>(null);
+  const [businessId, setBusinessId] = useState<string | null>('biz-sharma-kirana-001');
+  const [userRole, setUserRole] = useState<'owner' | 'cashier' | 'accountant'>('owner');
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
+  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(false);
+
   // Multilingual & Locale State
   const [uiLanguage, setUiLanguageState] = useState<string>('pa-IN');
   const [inputLanguage, setInputLanguage] = useState<string>('hi-IN');
@@ -216,12 +254,299 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           telemetry,
           activityEvents,
           syncQueue,
+          user,
+          businessId,
+          isDemoMode,
         })
       );
     } catch (e) {
       console.error('Failed to save to local storage', e);
     }
-  }, [business, products, customers, suppliers, sales, receivables, telemetry, activityEvents, syncQueue, isHydrated]);
+  }, [business, products, customers, suppliers, sales, receivables, telemetry, activityEvents, syncQueue, user, businessId, isDemoMode, isHydrated]);
+
+  // Supabase Auth Session Listener & Synchronization
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    supabase.auth.getSession().then(({ data: { session: activeSession } }) => {
+      if (activeSession?.user) {
+        setSession(activeSession);
+        setUser({
+          id: activeSession.user.id,
+          email: activeSession.user.email || '',
+          fullName: activeSession.user.user_metadata?.full_name || 'Business Owner',
+        });
+        setIsDemoMode(false);
+        resolveUserBusiness(activeSession.user.id);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      if (currentSession?.user) {
+        setSession(currentSession);
+        setUser({
+          id: currentSession.user.id,
+          email: currentSession.user.email || '',
+          fullName: currentSession.user.user_metadata?.full_name || 'Business Owner',
+        });
+        setIsDemoMode(false);
+        resolveUserBusiness(currentSession.user.id);
+      } else {
+        setSession(null);
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  const resolveUserBusiness = async (userId: string) => {
+    if (!isSupabaseConfigured()) return;
+    try {
+      const { data: member } = await supabase
+        .from('business_members')
+        .select('business_id, role, businesses(*)')
+        .eq('user_id', userId)
+        .limit(1)
+        .maybeSingle();
+
+      if (member) {
+        setBusinessId(member.business_id);
+        setUserRole(((member.role as string) as 'owner' | 'cashier' | 'accountant') || 'owner');
+        if (member.businesses) {
+          const biz = member.businesses as any;
+          setBusiness((prev) => ({
+            ...prev,
+            id: biz.id,
+            name: biz.name || prev.name,
+            ownerName: biz.owner_name || prev.ownerName,
+            businessType: biz.business_type || prev.businessType,
+          }));
+        }
+        loadCloudBusinessData(member.business_id);
+      }
+    } catch (err) {
+      console.warn('Could not resolve business membership:', err);
+    }
+  };
+
+  const loadCloudBusinessData = async (bId: string) => {
+    if (!isSupabaseConfigured()) return;
+    try {
+      const { data: cloudProds } = await supabase.from('products').select('*').eq('business_id', bId);
+      if (cloudProds && cloudProds.length > 0) {
+        setProducts(
+          cloudProds.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            category: p.category || 'General',
+            sku: p.sku || `SKU-${p.id.slice(0, 4)}`,
+            quantity: Number(p.quantity) || 0,
+            unit: p.unit || 'kg',
+            purchasePrice: Number(p.purchase_price) || 0,
+            sellingPrice: Number(p.selling_price) || 0,
+            reorderLevel: Number(p.reorder_level) || 10,
+            supplierName: p.supplier_name || 'General Supplier',
+            updatedAt: p.updated_at || new Date().toISOString(),
+          }))
+        );
+      }
+
+      const { data: cloudCusts } = await supabase.from('customers').select('*').eq('business_id', bId);
+      if (cloudCusts && cloudCusts.length > 0) {
+        setCustomers(
+          cloudCusts.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            phone: c.phone || '',
+            totalPurchases: Number(c.total_purchases) || 0,
+            amountPaid: Number(c.amount_paid) || 0,
+            amountPending: Number(c.amount_pending) || 0,
+            creditLimit: 5000,
+            lastTransactionDate: c.last_transaction_at || c.created_at,
+            createdAt: c.created_at,
+          }))
+        );
+      }
+    } catch (e) {
+      console.warn('Could not load cloud business data:', e);
+    }
+  };
+
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    setIsLoadingAuth(true);
+    try {
+      if (!isSupabaseConfigured()) {
+        const demoUser: AuthUser = {
+          id: `usr_${Date.now()}`,
+          email,
+          fullName: email.split('@')[0].toUpperCase(),
+        };
+        setUser(demoUser);
+        setIsDemoMode(false);
+        setIsLoadingAuth(false);
+        return { success: true };
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setIsLoadingAuth(false);
+        return { success: false, error: error.message };
+      }
+
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          email: data.user.email || email,
+          fullName: data.user.user_metadata?.full_name || email.split('@')[0],
+        });
+        setSession(data.session);
+        setIsDemoMode(false);
+        await resolveUserBusiness(data.user.id);
+      }
+      setIsLoadingAuth(false);
+      return { success: true };
+    } catch (err: any) {
+      setIsLoadingAuth(false);
+      return { success: false, error: err.message || 'Login failed' };
+    }
+  };
+
+  const register = async (data: {
+    fullName: string;
+    businessName: string;
+    email: string;
+    password: string;
+    phone?: string;
+    businessType?: string;
+  }): Promise<{ success: boolean; error?: string }> => {
+    setIsLoadingAuth(true);
+    try {
+      if (!isSupabaseConfigured()) {
+        const demoUser: AuthUser = {
+          id: `usr_${Date.now()}`,
+          email: data.email,
+          fullName: data.fullName,
+        };
+        setUser(demoUser);
+        setBusiness((prev) => ({
+          ...prev,
+          name: data.businessName,
+          ownerName: data.fullName,
+          phone: data.phone || prev.phone,
+          businessType: data.businessType || prev.businessType,
+        }));
+        setIsDemoMode(false);
+        setIsLoadingAuth(false);
+        return { success: true };
+      }
+
+      const { data: authData, error: authErr } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.fullName,
+          },
+        },
+      });
+
+      if (authErr) {
+        setIsLoadingAuth(false);
+        return { success: false, error: authErr.message };
+      }
+
+      const userId = authData.user?.id;
+      if (userId) {
+        // 1. Create Profile
+        await supabase.from('profiles').upsert({
+          id: userId,
+          email: data.email,
+          full_name: data.fullName,
+          phone: data.phone || null,
+        });
+
+        // 2. Create Business
+        const { data: newBiz, error: bizErr } = await supabase
+          .from('businesses')
+          .insert({
+            name: data.businessName,
+            owner_name: data.fullName,
+            phone: data.phone || null,
+            business_type: data.businessType || 'Kirana & Grocery',
+            currency: 'INR',
+            language: uiLanguage || 'hi-IN',
+          })
+          .select()
+          .single();
+
+        if (bizErr) {
+          console.warn('Error inserting business record:', bizErr);
+        }
+
+        const bId = newBiz?.id || `biz_${Date.now()}`;
+        setBusinessId(bId);
+
+        // 3. Create Business Membership
+        await supabase.from('business_members').insert({
+          business_id: bId,
+          user_id: userId,
+          role: 'owner',
+        });
+
+        setUser({
+          id: userId,
+          email: data.email,
+          fullName: data.fullName,
+        });
+        setSession(authData.session);
+        setBusiness((prev) => ({
+          ...prev,
+          id: bId,
+          name: data.businessName,
+          ownerName: data.fullName,
+          phone: data.phone || prev.phone,
+          businessType: data.businessType || prev.businessType,
+        }));
+        setIsDemoMode(false);
+      }
+
+      setIsLoadingAuth(false);
+      return { success: true };
+    } catch (err: any) {
+      setIsLoadingAuth(false);
+      return { success: false, error: err.message || 'Registration failed' };
+    }
+  };
+
+  const logout = async () => {
+    if (isSupabaseConfigured()) {
+      await supabase.auth.signOut();
+    }
+    setUser(null);
+    setSession(null);
+    enterDemoMode();
+  };
+
+  const enterDemoMode = () => {
+    setIsDemoMode(true);
+    setUser({
+      id: 'demo-user-001',
+      email: 'sharma@kirana-delhi.in',
+      fullName: 'Ramesh Sharma',
+    });
+    setBusinessId('biz-sharma-kirana-001');
+    setUserRole('owner');
+    setBusiness(initialBusiness);
+    setProducts(initialProducts);
+    setCustomers(initialCustomers);
+    setSuppliers(initialSuppliers);
+    setSales(initialSales);
+    setReceivables(initialReceivables);
+  };
 
   const addActivityEvent = (event: Omit<ActivityEvent, 'id' | 'timestamp'>) => {
     const newEvt: ActivityEvent = {
@@ -581,6 +906,36 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setCanUndo(false);
     }, 8000);
 
+    // Background Server Database Sync (PostgreSQL)
+    if (isOnline && !isDemoMode) {
+      fetch('/api/sales', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          'x-kinetic-business-id': businessId || 'biz-sharma-kirana-001',
+        },
+        body: JSON.stringify({
+          customerId,
+          customerName: saleInput.customerName,
+          customerPhone: saleInput.customerPhone,
+          items: finalItems.map((fi) => ({
+            productId: fi.productId,
+            productName: fi.productName,
+            quantity: fi.quantity,
+            unit: fi.unit,
+            unitPrice: fi.unitPrice,
+            totalPrice: fi.totalPrice,
+          })),
+          totalAmount: saleInput.totalAmount,
+          paymentStatus: saleInput.paymentStatus,
+          paymentDueDate: saleInput.paymentDueDate,
+          notes: saleInput.notes,
+          source: isVoice ? 'voice' : 'manual',
+        }),
+      }).catch((e) => console.warn('Background sale sync buffered locally:', e));
+    }
+
     return {
       success: true,
       sale: newSale,
@@ -725,6 +1080,24 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       },
     });
 
+    // Background Server Procurement Sync
+    if (isOnline && !isDemoMode) {
+      fetch('/api/purchases', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          'x-kinetic-business-id': businessId || 'biz-sharma-kirana-001',
+        },
+        body: JSON.stringify({
+          supplierName: purchaseInput.supplierName,
+          items: purchaseInput.items,
+          totalAmount: purchaseInput.totalAmount,
+          paymentStatus: purchaseInput.paymentStatus,
+        }),
+      }).catch((e) => console.warn('Background purchase sync buffered:', e));
+    }
+
     return {
       success: true,
       purchase: newPurchase,
@@ -789,6 +1162,24 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         status: 'confirmed',
       },
     });
+
+    // Background Server Payment Sync
+    if (isOnline && !isDemoMode) {
+      fetch('/api/payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          'x-kinetic-business-id': businessId || 'biz-sharma-kirana-001',
+        },
+        body: JSON.stringify({
+          customerId: paymentInput.customerId,
+          amount: paymentInput.amount,
+          paymentMode: paymentInput.paymentMode,
+          notes: paymentInput.notes,
+        }),
+      }).catch((e) => console.warn('Background payment sync failed:', e));
+    }
 
     return {
       success: true,
@@ -1025,6 +1416,16 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   return (
     <BusinessContext.Provider
       value={{
+        user,
+        session,
+        businessId,
+        userRole,
+        isDemoMode,
+        isLoadingAuth,
+        login,
+        register,
+        logout,
+        enterDemoMode,
         business,
         products,
         customers,

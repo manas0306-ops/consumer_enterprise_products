@@ -183,10 +183,13 @@ export interface AIIntentResult {
     productName?: string;
     quantity?: number;
     unit?: string;
+    items?: Array<{ productName: string; quantity: number; unit: string; unitPrice?: number; totalPrice?: number }>;
     amount?: number;
     paymentStatus?: PaymentStatus;
     expectedPaymentDate?: string;
     notes?: string;
+    customerCandidates?: string[];
+    unknownProductMentioned?: string;
   };
   missingFields: string[];
   suggestedResponse: string;
